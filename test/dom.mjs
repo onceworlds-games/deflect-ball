@@ -176,7 +176,8 @@ export function installDom({ width = 1280, height = 720 } = {}) {
   g.dispatchWindowEvent = (t, e) => win.dispatch(t, e);
   g.AudioContext = class {
     constructor() {
-      this.currentTime = 0;
+      const t0 = Date.now();
+      Object.defineProperty(this, 'currentTime', { get: () => (Date.now() - t0) / 1000 });
       this.sampleRate = 44100;
       this.state = 'running';
       this.destination = swallow();
