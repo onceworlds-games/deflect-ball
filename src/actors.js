@@ -8,6 +8,7 @@ import { clamp, lerp } from './config.js';
 import { lerpAngle } from './sim.js';
 
 const TARGET_RED = '#ff2b3f';
+const GLOW = 2.4; // how far over white the visor and blade glow (the bloom picks them up)
 
 // ---------------------------------------------------------------- the runner's geometry (built once, shared by everyone)
 let GEO = null;
@@ -169,8 +170,8 @@ export class Actors {
     }
     const col = new THREE.Color(color);
     const suit = new THREE.MeshStandardMaterial({ color: col, vertexColors: true, roughness: 0.42, metalness: 0.22 });
-    const glow = new THREE.MeshBasicMaterial({ color: col.clone().multiplyScalar(1.9), toneMapped: false, side: THREE.DoubleSide });
-    const bladeMat = new THREE.MeshBasicMaterial({ color: col.clone().multiplyScalar(1.9), toneMapped: false });
+    const glow = new THREE.MeshBasicMaterial({ color: col.clone().multiplyScalar(GLOW), toneMapped: false, side: THREE.DoubleSide });
+    const bladeMat = new THREE.MeshBasicMaterial({ color: col.clone().multiplyScalar(GLOW), toneMapped: false });
     const arcMat = new THREE.MeshBasicMaterial({ color: col.clone().multiplyScalar(2.2), transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, toneMapped: false });
 
     const root = new THREE.Group();
@@ -248,8 +249,8 @@ export class Actors {
     r.hex = color;
     r.col.set(color);
     r.suit.color.copy(r.col);
-    r.glow.color.copy(r.col).multiplyScalar(1.9);
-    r.bladeMat.color.copy(r.col).multiplyScalar(1.9);
+    r.glow.color.copy(r.col).multiplyScalar(GLOW);
+    r.bladeMat.color.copy(r.col).multiplyScalar(GLOW);
     r.arcMat.color.copy(r.col).multiplyScalar(2.2);
     r.ring.material.color.copy(r.col).multiplyScalar(2);
     r.tag.key = '';
@@ -425,14 +426,14 @@ export class Actors {
         r.arc.visible = true;
         r.arcPivot.rotation.y = lerp(-1.15, 1.15, e);
         r.arcMat.opacity = this.reduced ? 0.55 * (1 - t) : 0.95 * (1 - t * t);
-        r.bladeMat.color.copy(r.col).multiplyScalar(1.9 + (1 - t) * 3);
+        r.bladeMat.color.copy(r.col).multiplyScalar(GLOW + (1 - t) * 3);
         return;
       }
     }
     // resting: the blade held forward and down
     r.armR.rotation.x += (-0.95 - r.armR.rotation.x) * (1 - Math.exp(-dt * 14));
     r.armR.rotation.z += (0.12 - r.armR.rotation.z) * (1 - Math.exp(-dt * 14));
-    r.bladeMat.color.copy(r.col).multiplyScalar(1.9);
+    r.bladeMat.color.copy(r.col).multiplyScalar(GLOW);
   }
 
   /** Once a frame: the clock for idle motion and the target marker. */

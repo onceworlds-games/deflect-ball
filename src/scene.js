@@ -186,9 +186,9 @@ export function createStage(canvas, { poster = false, quality = 'high', pixelRat
   const anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy?.() ?? 1);
 
   // ---------------------------------------------------------------- light
-  const hemi = new THREE.HemisphereLight(0x8e86ff, 0x1c1236, 2.3);
+  const hemi = new THREE.HemisphereLight(0x8e86ff, 0x1c1236, 2.1);
   scene.add(hemi);
-  const sun = new THREE.DirectionalLight(0xc3d2ff, 5.2);
+  const sun = new THREE.DirectionalLight(0xc3d2ff, 4.6);
   sun.position.set(-24, 40, 20);
   sun.target.position.set(0, 0, 0);
   sun.shadow.camera.left = -31;
@@ -387,7 +387,7 @@ export function createStage(canvas, { poster = false, quality = 'high', pixelRat
       c.setPixelRatio(PR);
       c.setSize(W, H);
       c.addPass(new RenderPass(scene, camera));
-      bloom = new UnrealBloomPass(new THREE.Vector2(W, H), current === 'high' ? 0.62 : 0.5, 0.55, 0.9);
+      bloom = new UnrealBloomPass(new THREE.Vector2(W, H), current === 'high' ? 0.62 : 0.5, 0.55, 0.95);
       c.addPass(bloom);
       c.addPass(new OutputPass());
       composer = c;
