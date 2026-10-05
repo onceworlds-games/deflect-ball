@@ -196,7 +196,12 @@ kbd {
 #noticeBtn { min-width: 200px; height: 58px; border: 0; background: var(--cy); color: #04121a; font-size: 26px; letter-spacing: 0.2em; cursor: pointer; clip-path: polygon(14px 0, 100% 0, calc(100% - 14px) 100%, 0 100%); }
 
 body.reduced #play { animation: none; }
-body.reduced #callout.show, body.reduced #banner.show, body.reduced #count.show { animation-duration: 0.01s; }
+/* reduced motion: things appear and fade; nothing slides, pops or pulses */
+@keyframes fade { 0%, 75% { opacity: 1; } 100% { opacity: 0; } }
+body.reduced #callout.show { animation: fade 1.3s linear forwards; }
+body.reduced #banner.show { animation: fade 2.4s linear forwards; }
+body.reduced #count.show { animation: fade 0.9s linear forwards; }
+body.reduced #clash.show { animation: none; opacity: 1; }
 
 @media (max-height: 460px) {
   .seg { padding: 2px 10px 1px; min-width: 62px; }

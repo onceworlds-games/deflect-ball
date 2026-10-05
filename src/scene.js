@@ -444,6 +444,15 @@ export function createStage(canvas, { poster = false, quality = 'high', pixelRat
     }
   }
 
+  /** The rim shifts from cyan to a hot red as you near the edge (k 0..1): the void is out. */
+  let rimK = -1;
+  function setRimWarning(k) {
+    k = Math.round(Math.max(0, Math.min(1, k)) * 20) / 20;
+    if (k === rimK) return;
+    rimK = k;
+    rimMat.color.setRGB(0.4 + 2.6 * k, 1.8 - 1.35 * k, 2.4 - 2.0 * k);
+  }
+
   const tmp = new THREE.Vector3();
   function update(dt, t) {
     sky.position.copy(camera.position);
@@ -473,7 +482,7 @@ export function createStage(canvas, { poster = false, quality = 'high', pixelRat
   resize(width, height, pixelRatio);
   setQuality(quality);
 
-  return { renderer, scene, camera, sun, hemi, ballLight, update, render, resize, setQuality, fovFor, get bloom() { return bloom; }, get composer() { return composer; } };
+  return { renderer, scene, camera, sun, hemi, ballLight, update, render, resize, setQuality, setRimWarning, fovFor, get bloom() { return bloom; }, get composer() { return composer; } };
 }
 
 export { THREE };

@@ -694,6 +694,10 @@ async function boot() {
     }
     if (!arrowOn) hud.arrow(false, 0, 0, 0, '#fff');
 
+    // ---- the edge of the world warns you
+    const nearEdge = net.active && net.body && !room.spectating && (ph === 'lobby' || ph === 'starting' || ((ph === 'intro' || ph === 'play') && meIn && net.alive));
+    stage.setRimWarning(nearEdge ? (Math.hypot(net.body.x, net.body.z) - 20.5) / 5 : 0);
+
     // ---- the camera
     const canFollow = net.active && net.body && !room.spectating && (ph === 'lobby' || ph === 'starting' || ((ph === 'intro' || ph === 'play') && meIn && net.alive));
     const overT = g && ph === 'over' ? matchNow - (num(g.until) - OVER_MS) : -1;

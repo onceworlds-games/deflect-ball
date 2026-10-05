@@ -503,6 +503,7 @@ export class BallView {
     this.N = 56;
     this.pts = new Float32Array(this.N * 3);
     this.have = 0;
+    this.trailAcc = 0;
     this.trailPos = new Float32Array(this.N * 2 * 3);
     this.trailCol = new Float32Array(this.N * 2 * 3);
     const geo = new THREE.BufferGeometry();
@@ -607,18 +608,30 @@ export class BallView {
       this.line.visible = true;
     } else this.line.visible = false;
 
-    // the trail
+    // the trail: a point every 1/60 s whatever the frame rate, so it is about a second long at any speed
     if (live) {
       const moved = Math.hypot(st.x - this.lastX, st.y - this.lastY, st.z - this.lastZ);
-      if (this.have === 0 || moved > 7) {
+      const jumpAt = (st.speed ?? 30) * Math.max(dt, 1 / 60) * 2.5 + 2;
+      if (this.have === 0 || moved > jumpAt) {
         for (let i = 0; i < this.N; i++) {
           this.pts[i * 3] = st.x;
           this.pts[i * 3 + 1] = st.y;
           this.pts[i * 3 + 2] = st.z;
         }
         this.have = 1;
+        this.trailAcc = 0;
       } else {
-        this.pts.copyWithin(3, 0, (this.N - 1) * 3);
+        this.trailAcc += dt;
+        const n = Math.min(8, Math.floor(this.trailAcc * 60));
+        this.trailAcc -= Math.floor(this.trailAcc * 60) / 60;
+        for (let j = 1; j <= n; j++) {
+          const f = j / n;
+          this.pts.copyWithin(3, 0, (this.N - 1) * 3);
+          this.pts[0] = this.lastX + (st.x - this.lastX) * f;
+          this.pts[1] = this.lastY + (st.y - this.lastY) * f;
+          this.pts[2] = this.lastZ + (st.z - this.lastZ) * f;
+        }
+        // the head is always exactly where the ball is
         this.pts[0] = st.x;
         this.pts[1] = st.y;
         this.pts[2] = st.z;

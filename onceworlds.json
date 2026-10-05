@@ -5,18 +5,78 @@
   "dir": "dist",
   "genre": "Action",
   "icon": "store/icon.png",
-  "thumbnails": ["store/thumb-1.png", "store/thumb-2.png", "store/thumb-3.png"],
+  "thumbnails": [
+    "store/thumb-1.png",
+    "store/thumb-2.png",
+    "store/thumb-3.png"
+  ],
   "badges": [
-    { "id": "first-win", "name": "First Win", "description": "Win a match.", "icon": "store/badge-first-win.png" },
-    { "id": "perfect", "name": "Perfect", "description": "Deflect within 0.1 s of impact.", "icon": "store/badge-perfect.png" },
-    { "id": "clash-king", "name": "Clash King", "description": "Win a clash of 10+ deflects.", "icon": "store/badge-clash-king.png" },
-    { "id": "speed-demon", "name": "Speed Demon", "description": "Deflect the ball above speed 120.", "icon": "store/badge-speed-demon.png" }
+    {
+      "id": "first-win",
+      "name": "First Win",
+      "description": "Win a match.",
+      "icon": "store/badge-first-win.png"
+    },
+    {
+      "id": "perfect",
+      "name": "Perfect",
+      "description": "Deflect within 0.1 s of impact.",
+      "icon": "store/badge-perfect.png"
+    },
+    {
+      "id": "clash-king",
+      "name": "Clash King",
+      "description": "Win a clash of 10+ deflects.",
+      "icon": "store/badge-clash-king.png"
+    },
+    {
+      "id": "speed-demon",
+      "name": "Speed Demon",
+      "description": "Deflect the ball above speed 120.",
+      "icon": "store/badge-speed-demon.png"
+    }
   ],
   "controls": [
-    { "keys": ["W", "A", "S", "D"], "action": "Move" },
-    { "keys": ["Space"], "action": "Jump" },
-    { "keys": ["Click", "F", "E"], "action": "Deflect" },
-    { "keys": ["Shift"], "action": "Dash" },
-    { "keys": ["Mouse"], "action": "Aim" }
+    {
+      "keys": [
+        "W",
+        "A",
+        "S",
+        "D"
+      ],
+      "action": "Move"
+    },
+    {
+      "keys": [
+        "Arrows"
+      ],
+      "action": "Move"
+    },
+    {
+      "keys": [
+        "Space"
+      ],
+      "action": "Jump"
+    },
+    {
+      "keys": [
+        "Click",
+        "F",
+        "E"
+      ],
+      "action": "Deflect"
+    },
+    {
+      "keys": [
+        "Shift"
+      ],
+      "action": "Dash"
+    },
+    {
+      "keys": [
+        "Mouse"
+      ],
+      "action": "Aim"
+    }
   ]
 }
