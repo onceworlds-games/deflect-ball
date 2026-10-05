@@ -348,7 +348,7 @@ export function createNet(
       V.ez = old.z + V.ez - nb.z;
       if (Math.hypot(V.ex, V.ey, V.ez) > 4) V.ex = V.ey = V.ez = 0;
     }
-    if (!V.have) S.lastN = nb.n; // the first word on a round we joined late: not a deflect to play
+    if (!V.have || nb.n < S.lastN) S.lastN = nb.n; // the first word on a round we joined late (or the host turned one of ours down): not a deflect to play
     V.ball = nb;
     V.have = true;
     V.localN = nb.n;
@@ -365,13 +365,11 @@ export function createNet(
 
   /** The ball reached me. My page decides whether the window was open. */
   function localImpact(b) {
-    if (windowOpen(L.def, L.clock)) {
+    const to = windowOpen(L.def, L.clock) ? pickLocal() : null;
+    const tp = to ? chestOf(to) : null;
+    if (to && tp) {
       const lead = L.clock - L.def.winStart;
-      const to = pickLocal();
-      if (!to) return;
       const n0 = b.n;
-      const tp = chestOf(to);
-      if (!tp) return;
       b.by = me;
       b.target = to;
       redirectBall(b, tp.x, tp.y, tp.z);
@@ -941,6 +939,13 @@ export function createNet(
       const d = defNow();
       const now = defClock();
       return { frac: cooldownFrac(d, now), open: windowOpen(d, now) };
+    },
+    /** Who the ball would go to if I deflected it now (the id), or null. */
+    aimPick() {
+      if (!L.body || !L.active) return null;
+      const ph = phase();
+      if (ph === 'lobby' || ph === 'starting' || !inRoster() || !meAlive()) return null;
+      return pickLocal();
     },
     /** The error offset of the drawn ball (smooths the host's corrections). */
     ballOffset: V,

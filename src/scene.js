@@ -81,7 +81,7 @@ function arenaTextures(size, anisotropy) {
     for (let j = 0; j < n; j++) {
       const a0 = off + (j / n) * Math.PI * 2;
       const a1 = off + ((j + 1) / n) * Math.PI * 2;
-      const l = 24 + rng() * 22;
+      const l = 36 + rng() * 26;
       tile(c, r0, r1, a0, a1);
       c.fillStyle = `rgb(${(l * 0.78) | 0},${(l * 0.9) | 0},${(l * 1.2) | 0})`;
       c.fill();
@@ -200,6 +200,7 @@ export function createStage(canvas, { poster = false, quality = 'high', pixelRat
   sun.shadow.bias = -0.0004;
   sun.shadow.normalBias = 0.05;
   sun.shadow.radius = 3;
+  sun.shadow.camera.updateProjectionMatrix();
   scene.add(sun, sun.target);
   const rim = new THREE.DirectionalLight(0xff5aa0, 1.7);
   rim.position.set(30, 14, -26);
@@ -212,7 +213,7 @@ export function createStage(canvas, { poster = false, quality = 'high', pixelRat
   const coarse = typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches;
   const tex = arenaTextures(quality === 'low' || coarse ? 1024 : 2048, anisotropy);
   const floorMat = new THREE.MeshStandardMaterial({
-    map: tex.map, emissiveMap: tex.emissiveMap, emissive: 0xffffff, emissiveIntensity: 1.6, roughness: 0.55, metalness: 0.3, color: 0xffffff,
+    map: tex.map, emissiveMap: tex.emissiveMap, emissive: 0xffffff, emissiveIntensity: 2.1, roughness: 0.6, metalness: 0.12, color: 0xffffff,
   });
   const floor = new THREE.Mesh(new THREE.CircleGeometry(ARENA_R, 128), floorMat);
   floor.rotation.x = -Math.PI / 2;

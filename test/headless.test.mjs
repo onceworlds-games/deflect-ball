@@ -46,6 +46,25 @@ test('the page boots, shows the title with Play, and Play goes to the lobby', as
   assert.ok(!visible(dom, 'title'), 'Play hides the title');
   assert.ok(visible(dom, 'lobby'), 'the lobby shows');
   assert.equal(dom.byId.get('setVal').textContent, '5', 'rounds as a big value');
+  // the host's tap targets change it
+  dom.byId.get('setUp').dispatch('click');
+  for (let i = 0; i < 3; i++) clock.frame();
+  assert.equal(dom.byId.get('setVal').textContent, '7');
+  dom.byId.get('setDown').dispatch('click');
+  dom.byId.get('setDown').dispatch('click');
+  for (let i = 0; i < 3; i++) clock.frame();
+  assert.equal(dom.byId.get('setVal').textContent, '3');
+  dom.byId.get('setUp').dispatch('click');
+  for (let i = 0; i < 3; i++) clock.frame();
+  assert.equal(dom.byId.get('setVal').textContent, '5');
+  // the practice ball comes for you in the lobby: a miss is a small callout, never an elimination
+  let miss = false;
+  for (let i = 0; i < 60 * 12 && !miss; i++) {
+    clock.frame();
+    if (dom.byId.get('callout').textContent.startsWith('MISS')) miss = true;
+  }
+  assert.ok(miss, 'the lobby ball arrived and was missed');
+  assert.ok(!visible(dom, 'top'), 'no match HUD in the lobby');
   assert.deepEqual(errors, [], `console errors: ${errors.join('\n')}`);
   globalThis.__game = { dom, clock };
 });
@@ -53,7 +72,7 @@ test('the page boots, shows the title with Play, and Play goes to the lobby', as
 test('a match from the lobby: countdown, rounds, results, back to the lobby (a player who plays)', async () => {
   const { dom, clock } = globalThis.__game;
   const seen = { count: new Set(), banner: new Set(), top: false, board: false, results: false, callouts: new Set(), reticle: false };
-  const key = (code, down = true) => dispatchWindowEvent(down ? 'keydown' : 'keyup', { code, repeat: false, key: code });
+  const key = (code, down = true) => globalThis.dispatchWindowEvent(down ? 'keydown' : 'keyup', { code, repeat: false, key: code });
   // the start button of the stand-in room (the platform draws Ready/Start for real)
   dom.byId.get('stubStart').dispatch('click');
   let phaseOver = 0;
@@ -69,7 +88,7 @@ test('a match from the lobby: countdown, rounds, results, back to the lobby (a p
     }
     if (i % 301 === 0) key('Space');
     if (i % 503 === 0) key('ShiftLeft');
-    if (i % 41 === 0) dispatchWindowEvent('pointermove', { pointerType: 'mouse', movementX: 7, movementY: -2, pointerId: 1 });
+    if (i % 41 === 0) globalThis.dispatchWindowEvent('pointermove', { pointerType: 'mouse', movementX: 7, movementY: -2, pointerId: 1 });
     clock.frame();
     if (i % 10 === 0) {
       const n = dom.byId.get('count').textContent;
@@ -106,7 +125,7 @@ async function playMatch({ sdk, act, minRounds = 5, seconds = 700 }) {
   dom.byId.get('play').dispatch('click');
   for (let i = 0; i < 30; i++) clock.frame();
   dom.byId.get('stubStart').dispatch('click');
-  const key = (code, down = true) => dispatchWindowEvent(down ? 'keydown' : 'keyup', { code, repeat: false, key: code });
+  const key = (code, down = true) => globalThis.dispatchWindowEvent(down ? 'keydown' : 'keyup', { code, repeat: false, key: code });
   const banners = new Set();
   let results = false;
   let board = false;

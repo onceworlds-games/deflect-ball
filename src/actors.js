@@ -123,7 +123,27 @@ export class Actors {
     ring.rotation.x = -Math.PI / 2;
     ring.visible = false;
     this.scene.add(ring);
-    return { sprite, ring, id: null };
+    // who the ball would go to if you deflected it now: a white ring under their feet
+    const aim = new THREE.Mesh(
+      new THREE.RingGeometry(0.95, 1.12, 40),
+      new THREE.MeshBasicMaterial({ color: new THREE.Color(2, 2, 2), transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, toneMapped: false }),
+    );
+    aim.rotation.x = -Math.PI / 2;
+    aim.visible = false;
+    this.scene.add(aim);
+    return { sprite, ring, aim, id: null };
+  }
+
+  /** Mark the player the ball would go to if you deflected now (or clear it). */
+  setAimMark(pose) {
+    const a = this.targetMark.aim;
+    if (!pose) {
+      a.visible = false;
+      return;
+    }
+    a.visible = true;
+    a.position.set(pose.x, pose.y + 0.08, pose.z);
+    a.scale.setScalar(this.reduced ? 1.2 : 1.2 + Math.sin(this.time * 7) * 0.08);
   }
 
   has(id) {
@@ -373,7 +393,7 @@ export class Actors {
       const dx = this.camera.position.x - pose.x;
       const dy = this.camera.position.y - (pose.y + 2.65);
       const dz = this.camera.position.z - pose.z;
-      const k = clamp(Math.hypot(dx, dy, dz) * 0.062, 0.9, 3.1);
+      const k = clamp(Math.hypot(dx, dy, dz) * 0.05, 0.8, 2.6);
       r.tag.sprite.scale.set(3.1 * k, 0.87 * k, 1);
     }
     r.ring.visible = !!opts.me;

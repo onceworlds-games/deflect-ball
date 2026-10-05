@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { TABLE, RING_R, BOT_NAMES, PLACE_POINTS, ARENA_R } from '../src/config.js';
-import { buildRoster, spawnSlots, lobbySpot, placementOrder, roundGain, addScores, rankMatch, awardsFrom, ordinal, colorOf } from '../src/match.js';
+import { buildRoster, spawnSlots, lobbySpot, roundGain, addScores, rankMatch, awardsFrom, ordinal, colorOf } from '../src/match.js';
 import { playMatch, finite } from './harness.mjs';
 
 test('the roster is the participants, then bots up to eight; same for every page', () => {

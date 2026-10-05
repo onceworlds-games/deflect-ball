@@ -202,3 +202,12 @@ body.reduced #callout.show, body.reduced #banner.show, body.reduced #count.show 
   #settings span { font-size: 30px; }
   #settings button { width: 44px; height: 44px; }
 }
+
+/* held upright: the platform's buttons sit top left, so the bars drop below them */
+@media (orientation: portrait) and (max-width: 700px) {
+  #top, #settings { top: calc(max(8px, env(safe-area-inset-top)) + 54px); }
+  .seg { min-width: 62px; padding: 3px 10px 2px; }
+  .seg span { font-size: 22px; }
+  #hint { bottom: 120px; font-size: 14px; letter-spacing: 0.12em; }
+  #watch { top: calc(max(8px, env(safe-area-inset-top)) + 54px); }
+}

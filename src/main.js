@@ -126,6 +126,7 @@ async function boot() {
   let resultsData = null;
   let closed = false;
   let meOutAt = -1e9;
+  let myPerfect = false;
   const tmpA = { x: 0, y: 0, z: 0, r: 0, sw: 0 };
   const tmpB = { x: 0, y: 0, z: 0, r: 0, sw: 0 };
   const tmpC = { x: 0, y: 0, z: 0, r: 0, sw: 0 };
@@ -215,6 +216,7 @@ async function boot() {
     net.on('deflect', onDeflect);
     net.on('mydeflect', ({ perfect, speed }) => {
       if (net.phase !== 'play') return;
+      myPerfect = !!perfect;
       stats.deflects++;
       stats.topSpeed = Math.max(stats.topSpeed, Math.round(speed));
       if (perfect) {
@@ -253,7 +255,7 @@ async function boot() {
       if (win === room.me.id) audio.sfx.win();
       const p = net.pose(win, tmpA);
       if (p) fx.celebrate(p.x, p.z, 120);
-      slow = 0;
+      if (!ow.settings.reducedMotion) slow = WIN_ORBIT_MS / 1000 - 0.1; // the winner, in slow motion
     });
     net.on('final', onFinal);
     net.on('practice', onPractice);
@@ -290,8 +292,9 @@ async function boot() {
     const toMe = to === room.me.id;
     fx.deflect(pa.x + dx * 0.8, pa.y + CHEST + 0.2, pa.z + dz * 0.8, dx, dy, dz, colorFor(by), power);
     ball.doFlare();
-    audio.sfx.deflect(power, false);
+    audio.sfx.deflect(power, mine && myPerfect);
     if (mine) {
+      myPerfect = false;
       rig.addTrauma(0.22 + power * 0.3);
       rig.kick(3 + power * 3);
       if (!ow.settings.reducedMotion) {
@@ -312,7 +315,8 @@ async function boot() {
     if (me) {
       meOutAt = performance.now();
       const g = net.g;
-      const place = g ? net.roster.length - g.out.indexOf(id) : 0;
+      const at = g ? g.out.indexOf(id) : -1;
+      const place = at >= 0 ? net.roster.length - at : 0;
       hud.callout('ELIMINATED', place > 0 ? ordinal(place) : '', 'bad');
       flash('#ff2b3f', 0.4);
       if (!ow.settings.reducedMotion) hitStop = 0.08;
@@ -394,6 +398,7 @@ async function boot() {
     audio.start();
     audio.sfx.tick();
     hud.title(false);
+    input.clearQueue();
     try {
       room.hideLobby(false);
     } catch {
@@ -479,6 +484,7 @@ async function boot() {
     ballState.color = tgt ? colorOf(tgt.idx) : '#2de2ff';
     ballState.target = tgt ? targetPoint.set(tgt.body.x, tgt.body.y + CHEST, tgt.body.z) : null;
     actors.setTarget(null);
+    actors.setAimMark(null);
     // the camera drifts round the arena
     rig.orbit(dt, 0, 0, 0, 40, 17.5, 0.07);
   }
@@ -632,6 +638,13 @@ async function boot() {
     ballState.color = b.target ? colorFor(b.target) : '#2de2ff';
     ballState.target = live && b.target !== me ? target : null;
     actors.setTarget(live && b.target ? b.target : null, targetPose, b.target === me);
+    // while the ball is mine: who it would go to, if I deflected now
+    let aimPose = null;
+    if (live && b.target === me && ph === 'play') {
+      const pick = net.aimPick();
+      if (pick) aimPose = net.pose(pick, tmpC);
+    }
+    actors.setAimMark(aimPose);
 
     // ---- when the ball is mine: the edge, the alarm
     let tti = Infinity;
@@ -673,7 +686,7 @@ async function boot() {
         // keep clear of the platform's buttons (top left) and the thumbs (bottom corners)
         if (ax < 150 && ay < 74) ax = 150;
         if (ay > h - 120 && (ax < 120 || ax > w - 120)) ay = h - 120;
-        hud.arrow(true, ax, ay, (Math.atan2(dx, -dy) * 180) / Math.PI, `#${new THREE.Color(ballState.color).getHexString()}`);
+        hud.arrow(true, ax, ay, (Math.atan2(dx, -dy) * 180) / Math.PI, ballState.color);
         arrowOn = true;
       }
     }
@@ -802,6 +815,7 @@ async function boot() {
       }
       if (mode === 'title') titleFrame(dt);
       else if (!closed) worldFrame(dt, vdt);
+      else input.setWantLock(false);
       // flashes fade quickly
       flashA = Math.max(0, flashA - dt * 3.2);
       hud.flash(flashA, flashColor);

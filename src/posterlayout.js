@@ -69,9 +69,9 @@ export function layout(name) {
   if (name === 'icon') {
     // the camera looks up into the dark sky from far above the arena; everything is placed in front of it
     const cam = [0, 60, 0];
-    const f = norm([0, 0.5, -1]);
+    const f = norm([0, 0.8, -1]);
     const r = [1, 0, 0];
-    const u = norm([0, 1, 0.5]);
+    const u = norm([0, 1, 0.8]);
     const at = (x, y, z) => add(add(add(cam, r, x), u, y), f, z);
     const ball = at(0.2, -0.3, 7.5);
     return {

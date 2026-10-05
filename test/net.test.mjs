@@ -74,7 +74,7 @@ test('two competent people: each decides their own deflect and the host honours 
 test('a page that reloads in the middle of a round comes back to the same place and the match goes on', () => {
   let reloaded = null;
   let bobBefore = null;
-  const { hub, players, finished } = runMatch({
+  const { hub, finished } = runMatch({
     humans: [{ id: 'ann' }, { id: 'bob' }, { id: 'cy' }],
     seed: 14,
     rounds: 3,
