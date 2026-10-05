@@ -107,9 +107,9 @@ export class Particles {
 export class Rings {
   constructor(scene, count = 8) {
     this.items = [];
-    const geo = new THREE.RingGeometry(0.8, 1, 56);
+    const geo = new THREE.RingGeometry(0.86, 1, 56);
     for (let i = 0; i < count; i++) {
-      const mat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, toneMapped: false });
+      const mat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
       const mesh = new THREE.Mesh(geo, mat);
       mesh.visible = false;
       mesh.frustumCulled = false;
@@ -120,7 +120,7 @@ export class Rings {
   }
 
   /** mode 'cam': faces the camera (a blast); 'ground': lies on the floor (a pulse). */
-  spawn(x, y, z, color, { r0 = 0.6, r1 = 6, life = 0.45, mode = 'cam', gain = 1.8 } = {}) {
+  spawn(x, y, z, color, { r0 = 0.6, r1 = 6, life = 0.45, mode = 'cam', gain = 1.2 } = {}) {
     const it = this.items[this.next];
     this.next = (this.next + 1) % this.items.length;
     it.on = true;
@@ -195,7 +195,7 @@ export class Shards {
     this.limit = Math.max(8, Math.min(this.max, n));
   }
 
-  burst(x, y, z, color, count = 16, power = 1, upward = 5) {
+  burst(x, y, z, color, count = 16, power = 1, upward = 5, size = 1) {
     for (let n = 0; n < count; n++) {
       const i = this.next;
       this.next = (this.next + 1) % this.limit;
@@ -214,7 +214,7 @@ export class Shards {
       this.rv[k] = rand(-9, 9);
       this.rv[k + 1] = rand(-9, 9);
       this.rv[k + 2] = rand(-9, 9);
-      const s = rand(0.7, 1.7);
+      const s = rand(0.7, 1.7) * size;
       this.s[k] = s;
       this.s[k + 1] = s * rand(0.5, 1.2);
       this.s[k + 2] = s * rand(0.5, 1.2);
@@ -283,8 +283,8 @@ export class Fx {
   constructor(scene, camera) {
     this.camera = camera;
     const dot = radialTexture(64);
-    this.sparks = new Particles(scene, 420, { size: 0.5, map: dot });
-    this.confetti = new Particles(scene, 260, { size: 0.42, map: dot });
+    this.sparks = new Particles(scene, 420, { size: 0.36, map: dot });
+    this.confetti = new Particles(scene, 260, { size: 0.34, map: dot });
     this.rings = new Rings(scene, 8);
     this.shards = new Shards(scene, 140);
     this.c = new THREE.Color();
@@ -312,8 +312,8 @@ export class Fx {
     const r = c.r;
     const g = c.g;
     const b = c.b;
-    this.rings.spawn(x, y, z, color, { r0: 0.8, r1: 4 + power * 5, life: 0.4, mode: 'cam', gain: 2 });
-    this.rings.spawn(x, 0.06, z, color, { r0: 0.8, r1: 6 + power * 7, life: 0.55, mode: 'ground', gain: 1.6 });
+    this.rings.spawn(x, y, z, color, { r0: 0.6, r1: 1.8 + power * 2.6, life: 0.35, mode: 'cam', gain: 1.4 });
+    this.rings.spawn(x, 0.06, z, color, { r0: 0.8, r1: 4 + power * 5, life: 0.5, mode: 'ground', gain: 1.1 });
     const n = Math.round((this.reduced ? 12 : 34 + power * 36) * this.q);
     for (let i = 0; i < n; i++) {
       const a = Math.random() * Math.PI * 2;
@@ -323,7 +323,7 @@ export class Fx {
       this.sparks.spawn(
         x, y, z,
         (along ? dx * sp * rand(0.5, 1.4) : 0) + Math.cos(a) * sp * 0.6, (along ? dy * sp * 0.5 : 0) + e * sp * 0.5 + 1, (along ? dz * sp * rand(0.5, 1.4) : 0) + Math.sin(a) * sp * 0.6,
-        rand(0.3, 0.7), 1.4 + r, 1.4 + g, 1.4 + b, 6, 1.2,
+        rand(0.3, 0.7), 0.8 + r, 0.8 + g, 0.8 + b, 6, 1.2,
       );
     }
   }
@@ -332,13 +332,13 @@ export class Fx {
   shatter(x, y, z, color) {
     const c = this.rgb(color);
     this.shards.burst(x, y + 1, z, color, Math.round(18 * Math.max(0.5, this.q)), 1);
-    this.rings.spawn(x, y + 1, z, color, { r0: 0.6, r1: 7, life: 0.5, mode: 'cam', gain: 2.2 });
-    this.rings.spawn(x, 0.06, z, color, { r0: 0.6, r1: 9, life: 0.6, mode: 'ground', gain: 1.6 });
+    this.rings.spawn(x, y + 1, z, color, { r0: 0.6, r1: 3.6, life: 0.45, mode: 'cam', gain: 1.4 });
+    this.rings.spawn(x, 0.06, z, color, { r0: 0.6, r1: 7, life: 0.6, mode: 'ground', gain: 1.1 });
     const n = Math.round((this.reduced ? 14 : 60) * this.q);
     for (let i = 0; i < n; i++) {
       const a = Math.random() * Math.PI * 2;
       const sp = rand(3, 14);
-      this.sparks.spawn(x, y + 1 + rand(-0.6, 0.6), z, Math.cos(a) * sp, rand(0, 9), Math.sin(a) * sp, rand(0.4, 0.9), 1.5 + c.r, 1.5 + c.g, 1.5 + c.b, 9, 1);
+      this.sparks.spawn(x, y + 1 + rand(-0.6, 0.6), z, Math.cos(a) * sp, rand(0, 9), Math.sin(a) * sp, rand(0.4, 0.9), 0.9 + c.r, 0.9 + c.g, 0.9 + c.b, 9, 1);
     }
   }
 
@@ -353,13 +353,13 @@ export class Fx {
       const px = Math.cos(a) * Math.sqrt(1 - e * e) * d;
       const py = e * d;
       const pz = Math.sin(a) * Math.sqrt(1 - e * e) * d;
-      this.sparks.spawn(x + px, y + py, z + pz, -px * 1.1, -py * 1.1, -pz * 1.1, 0.9, 1.4 + c.r, 1.4 + c.g, 1.4 + c.b, 0, 0);
+      this.sparks.spawn(x + px, y + py, z + pz, -px * 1.1, -py * 1.1, -pz * 1.1, 0.9, 0.8 + c.r, 0.8 + c.g, 0.8 + c.b, 0, 0);
     }
   }
 
   launch(x, y, z, color) {
-    this.rings.spawn(x, y, z, color, { r0: 1, r1: 12, life: 0.6, mode: 'cam', gain: 2.2 });
-    this.rings.spawn(x, 0.06, z, color, { r0: 1, r1: 18, life: 0.8, mode: 'ground', gain: 1.8 });
+    this.rings.spawn(x, y, z, color, { r0: 1, r1: 7, life: 0.55, mode: 'cam', gain: 1.3 });
+    this.rings.spawn(x, 0.06, z, color, { r0: 1, r1: 14, life: 0.8, mode: 'ground', gain: 1.1 });
   }
 
   /** A small puff where something lands or dashes. */
@@ -380,7 +380,7 @@ export class Fx {
       this.confetti.spawn(
         x + rand(-9, 9), rand(10, 18), z + rand(-9, 9),
         rand(-2, 2), rand(-2, 1), rand(-2, 2),
-        rand(2.4, 4.2), 1.1 + c.r, 1.1 + c.g, 1.1 + c.b, 4, 1.2,
+        rand(2.4, 4.2), 0.7 + c.r, 0.7 + c.g, 0.7 + c.b, 4, 1.2,
       );
     }
   }

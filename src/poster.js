@@ -98,14 +98,14 @@ export async function runPoster(name) {
 
   // the effects, aged to the moment
   for (const r of L.rings ?? []) {
-    fx.rings.spawn(r.pos[0], r.pos[1], r.pos[2], r.color, { r0: 0.8, r1: r.r1, life: 0.6, mode: r.mode, gain: 2 });
+    fx.rings.spawn(r.pos[0], r.pos[1], r.pos[2], r.color, { r0: 0.8, r1: r.r1, life: 0.6, mode: r.mode, gain: 1.3 });
     fx.rings.update(r.age ?? 0.1, camera);
   }
   for (const s of L.sparks ?? []) {
     fx.deflect(s.pos[0], s.pos[1], s.pos[2], s.dir[0], s.dir[1], s.dir[2], s.color, s.power ?? 0.8);
   }
   for (let i = 0; i < 6; i++) fx.sparks.update(0.02);
-  for (const s of L.shards ?? []) fx.shards.burst(s.x, s.y, s.z, s.color, 14, 1.1, 6);
+  for (const s of L.shards ?? []) fx.shards.burst(s.x, s.y, s.z, s.color, 10, 0.7, 5, 0.8);
   if (L.shards) for (let i = 0; i < 18; i++) fx.shards.update(0.02);
   if (L.confetti) {
     fx.celebrate(L.confetti.x, L.confetti.z, L.confetti.n);
@@ -144,14 +144,14 @@ function addArc(scene, camera, a) {
   const geo = new THREE.RingGeometry(a.radius * 0.82, a.radius, 64, 1, a.from, a.to - a.from);
   const mesh = new THREE.Mesh(
     geo,
-    new THREE.MeshBasicMaterial({ color: new THREE.Color(2.2, 2.4, 2.6), transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, toneMapped: false }),
+    new THREE.MeshBasicMaterial({ color: new THREE.Color(1.4, 1.5, 1.6), transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }),
   );
   mesh.position.set(...a.center);
   mesh.quaternion.copy(camera.quaternion);
   scene.add(mesh);
   const glow = new THREE.Mesh(
     new THREE.RingGeometry(a.radius * 0.7, a.radius * 1.12, 64, 1, a.from, a.to - a.from),
-    new THREE.MeshBasicMaterial({ map: radialTexture(32), color: new THREE.Color(0.2, 0.9, 1.3), transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, toneMapped: false }),
+    new THREE.MeshBasicMaterial({ map: radialTexture(32), color: new THREE.Color(0.15, 0.6, 0.9), transparent: true, opacity: 0.4, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }),
   );
   glow.position.copy(mesh.position);
   glow.quaternion.copy(mesh.quaternion);

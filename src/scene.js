@@ -173,7 +173,7 @@ export function createStage(canvas, { poster = false, quality = 'high', pixelRat
   });
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.1;
+  renderer.toneMappingExposure = 0.85; // three's ACES also divides by 0.6: this is about 1.4 in effect
   renderer.shadowMap.type = THREE.PCFShadowMap; // PCFSoftShadowMap is gone in this three; PCF is soft with the radius below
   renderer.setPixelRatio(pixelRatio);
   renderer.setSize(width, height, false);
@@ -186,9 +186,9 @@ export function createStage(canvas, { poster = false, quality = 'high', pixelRat
   const anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy?.() ?? 1);
 
   // ---------------------------------------------------------------- light
-  const hemi = new THREE.HemisphereLight(0x8e86ff, 0x1c1236, 2.1);
+  const hemi = new THREE.HemisphereLight(0x8e86ff, 0x1c1236, 1.5);
   scene.add(hemi);
-  const sun = new THREE.DirectionalLight(0xc3d2ff, 4.6);
+  const sun = new THREE.DirectionalLight(0xc3d2ff, 2.7);
   sun.position.set(-24, 40, 20);
   sun.target.position.set(0, 0, 0);
   sun.shadow.camera.left = -31;
@@ -202,7 +202,7 @@ export function createStage(canvas, { poster = false, quality = 'high', pixelRat
   sun.shadow.radius = 3;
   sun.shadow.camera.updateProjectionMatrix();
   scene.add(sun, sun.target);
-  const rim = new THREE.DirectionalLight(0xff5aa0, 1.7);
+  const rim = new THREE.DirectionalLight(0xff5aa0, 1.1);
   rim.position.set(30, 14, -26);
   scene.add(rim);
   const ballLight = new THREE.PointLight(0x2de2ff, 0, 46, 2);
@@ -213,7 +213,7 @@ export function createStage(canvas, { poster = false, quality = 'high', pixelRat
   const coarse = typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches;
   const tex = arenaTextures(quality === 'low' || coarse ? 1024 : 2048, anisotropy);
   const floorMat = new THREE.MeshStandardMaterial({
-    map: tex.map, emissiveMap: tex.emissiveMap, emissive: 0xffffff, emissiveIntensity: 2.1, roughness: 0.6, metalness: 0.12, color: 0xffffff,
+    map: tex.map, emissiveMap: tex.emissiveMap, emissive: 0xffffff, emissiveIntensity: 1.5, roughness: 0.6, metalness: 0.12, color: 0xffffff,
   });
   const floor = new THREE.Mesh(new THREE.CircleGeometry(ARENA_R, 128), floorMat);
   floor.rotation.x = -Math.PI / 2;
@@ -238,7 +238,7 @@ export function createStage(canvas, { poster = false, quality = 'high', pixelRat
   underMesh.castShadow = false;
   scene.add(underMesh);
 
-  const rimMat = new THREE.MeshBasicMaterial({ color: new THREE.Color().setRGB(0.4, 1.8, 2.4), toneMapped: false });
+  const rimMat = new THREE.MeshBasicMaterial({ color: new THREE.Color().setRGB(0.3, 1.2, 1.6) });
   const rimMesh = new THREE.Mesh(new THREE.TorusGeometry(ARENA_R + 0.1, 0.2, 8, 160), rimMat);
   rimMesh.rotation.x = Math.PI / 2;
   rimMesh.position.y = 0.04;
@@ -249,7 +249,7 @@ export function createStage(canvas, { poster = false, quality = 'high', pixelRat
   const rocks = new THREE.InstancedMesh(rockGeometry(1, 0.55, 3), new THREE.MeshStandardMaterial({ color: 0x3a3456, roughness: 0.92, flatShading: true }), rockCount);
   const crystals = new THREE.InstancedMesh(
     new THREE.OctahedronGeometry(0.5, 0),
-    new THREE.MeshBasicMaterial({ color: new THREE.Color().setRGB(0.5, 1.7, 2.3), toneMapped: false }),
+    new THREE.MeshBasicMaterial({ color: new THREE.Color().setRGB(0.35, 1.1, 1.5) }),
     22,
   );
   {
@@ -331,7 +331,7 @@ export function createStage(canvas, { poster = false, quality = 'high', pixelRat
   stars.frustumCulled = false;
   scene.add(stars);
   const moonDir = new THREE.Vector3(-0.5, 0.36, -0.78).normalize();
-  const moon = new THREE.Mesh(new THREE.SphereGeometry(26, 32, 16), new THREE.MeshBasicMaterial({ color: new THREE.Color().setRGB(1.3, 1.35, 1.7), fog: false, toneMapped: false }));
+  const moon = new THREE.Mesh(new THREE.SphereGeometry(26, 32, 16), new THREE.MeshBasicMaterial({ color: new THREE.Color().setRGB(0.95, 1.0, 1.3), fog: false }));
   moon.position.copy(moonDir).multiplyScalar(600);
   moon.frustumCulled = false;
   scene.add(moon);
@@ -387,7 +387,7 @@ export function createStage(canvas, { poster = false, quality = 'high', pixelRat
       c.setPixelRatio(PR);
       c.setSize(W, H);
       c.addPass(new RenderPass(scene, camera));
-      bloom = new UnrealBloomPass(new THREE.Vector2(W, H), current === 'high' ? 0.62 : 0.5, 0.55, 0.95);
+      bloom = new UnrealBloomPass(new THREE.Vector2(W, H), current === 'high' ? 0.22 : 0.16, 0.35, 1.15);
       c.addPass(bloom);
       c.addPass(new OutputPass());
       composer = c;
@@ -450,7 +450,7 @@ export function createStage(canvas, { poster = false, quality = 'high', pixelRat
     k = Math.round(Math.max(0, Math.min(1, k)) * 20) / 20;
     if (k === rimK) return;
     rimK = k;
-    rimMat.color.setRGB(0.4 + 2.6 * k, 1.8 - 1.35 * k, 2.4 - 2.0 * k);
+    rimMat.color.setRGB(0.3 + 1.9 * k, 1.2 - 0.9 * k, 1.6 - 1.3 * k);
   }
 
   const tmp = new THREE.Vector3();

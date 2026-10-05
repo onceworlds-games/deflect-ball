@@ -47,8 +47,8 @@ export function layout(name) {
     const cam = [0.6, 1.55, 8.4];
     return {
       name, w: 1280, h: 720, fov: 50, cam, look: [0, 1.5, 0], people,
-      ball: { pos: ball, color: COLORS[0], flare: 0.8, points: trail([[ball, [9.5, 1.7, 0.2], 18], [[9.5, 1.7, 0.2], [17, 2.6, 0.5], 38]]) },
-      rings: [{ pos: ball, mode: 'cam', r1: 7, color: COLORS[0], age: 0.1 }, { pos: [0, 0.06, 0], mode: 'ground', r1: 11, color: COLORS[1], age: 0.16 }],
+      ball: { pos: ball, color: COLORS[0], flare: 0.45, points: trail([[ball, [9.5, 1.7, 0.2], 18], [[9.5, 1.7, 0.2], [17, 2.6, 0.5], 38]]) },
+      rings: [{ pos: ball, mode: 'cam', r1: 3.4, color: COLORS[0], age: 0.12 }, { pos: [0, 0.06, 0], mode: 'ground', r1: 6.5, color: COLORS[1], age: 0.16 }],
       sparks: [{ pos: ball, dir: [0, 0.3, 1], color: COLORS[0], power: 0.9 }, { pos: ball, dir: [0, 0.3, -1], color: COLORS[1], power: 0.9 }],
       key: { a: [-4.7, 1.2, 0], b: [4.7, 1.2, 0], ball },
     };
@@ -60,9 +60,14 @@ export function layout(name) {
     ]);
     return {
       name, w: 1280, h: 720, fov: 50, cam: [0.5, 0.95, 6.6], look: [0, 1.45, 0], people, hidden: [1, 2, 3, 4, 5, 6, 7],
-      shards: people.slice(1).map((p) => ({ x: p.x * 0.6, y: 0.6, z: p.z * 0.6, color: p.color })),
-      rings: [{ pos: [0, 0.06, 0], mode: 'ground', r1: 10, color: COLORS[0], age: 0.3 }, { pos: [0, 1.2, 0], mode: 'cam', r1: 9, color: COLORS[0], age: 0.2 }],
-      confetti: { x: 0, z: 0, n: 260, age: 0.9 },
+      shards: people.slice(1).map((p, i) => {
+        // the fallen: behind and beside the winner, never between them and the camera
+        const a = Math.PI + 0.3 + (i * (Math.PI - 0.6)) / 6;
+        const r = 3.2 + (i % 3) * 1.5;
+        return { x: Math.cos(a) * r, y: 0.5, z: Math.sin(a) * r, color: p.color };
+      }),
+      rings: [{ pos: [0, 0.06, 0], mode: 'ground', r1: 6, color: COLORS[0], age: 0.3 }],
+      confetti: { x: 0, z: -2, n: 200, age: 0.9 },
       key: { winner: [0, 1.2, 0] },
     };
   }
@@ -76,7 +81,7 @@ export function layout(name) {
     const ball = at(0.2, -0.3, 7.5);
     return {
       name, w: 512, h: 512, fov: 40, cam, look: add(cam, f, 10), icon: true, people: [],
-      ball: { pos: ball, color: COLORS[0], flare: 0.9, scale: 1.7, points: trail([[ball, at(-5.5, 5.2, 7.8), 40], [at(-5.5, 5.2, 7.8), at(-11, 11, 8.4), 16]]) },
+      ball: { pos: ball, color: COLORS[0], flare: 0.55, scale: 1.05, points: trail([[ball, at(-5.5, 5.2, 7.8), 40], [at(-5.5, 5.2, 7.8), at(-11, 11, 8.4), 16]]) },
       arc: { center: at(0.4, -0.6, 7.2), radius: 2.5, from: 3.6, to: 5.6 },
       key: { ball, arcCenter: at(0.4, -0.6, 7.2) },
       axes: { r, u, f },
@@ -99,9 +104,9 @@ export function layout(name) {
   const look = [ball[0] + dir[0] * 16, 2.3, ball[2] + dir[2] * 16];
   return {
     name, w: 1280, h: 720, fov: 62, cam, look, people, targetIndex: 3,
-    ball: { pos: ball, color: COLORS[3], flare: 0.8, points: trail([[ball, contact, 8], [contact, [0, 1.6, 0], 40], [[0, 1.6, 0], [-6, 1.8, -12], 8]]) },
-    rings: [{ pos: contact, mode: 'cam', r1: 6, color: COLORS[0], age: 0.12 }, { pos: [contact[0], 0.06, contact[2]], mode: 'ground', r1: 9, color: COLORS[0], age: 0.2 }],
-    sparks: [{ pos: contact, dir, color: COLORS[0], power: 0.8 }],
+    ball: { pos: ball, color: COLORS[3], flare: 0.5, points: trail([[ball, contact, 8], [contact, [0, 1.6, 0], 40], [[0, 1.6, 0], [-6, 1.8, -12], 8]]) },
+    rings: [{ pos: contact, mode: 'cam', r1: 2.8, color: COLORS[0], age: 0.12 }, { pos: [contact[0], 0.06, contact[2]], mode: 'ground', r1: 5, color: COLORS[0], age: 0.2 }],
+    sparks: [{ pos: contact, dir, color: COLORS[0], power: 0.6 }],
     key: { hero: [A[0], 1.2, A[2]], ball, target: [B[0], 1.5, B[2]] },
   };
 }

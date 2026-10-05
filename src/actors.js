@@ -8,7 +8,9 @@ import { clamp, lerp } from './config.js';
 import { lerpAngle } from './sim.js';
 
 const TARGET_RED = '#ff2b3f';
-const GLOW = 2.4; // how far over white the visor and blade glow (the bloom picks them up)
+const GLOW = 1.6; // how far over white the visor and blade glow
+const SUIT = 0.62; // the suit is a little darker than its colour, or the light washes it to pastel
+const UI = new THREE.Color(1.7, 1.7, 1.7); // text sprites: lifted so the tone mapping leaves white white
 
 // ---------------------------------------------------------------- the runner's geometry (built once, shared by everyone)
 let GEO = null;
@@ -113,13 +115,13 @@ export class Actors {
     g.fillText('TARGET', 128, 232);
     const tex = new THREE.CanvasTexture(c);
     tex.colorSpace = THREE.SRGBColorSpace;
-    const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false, depthWrite: false, toneMapped: false }));
+    const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, color: UI, transparent: true, depthTest: false, depthWrite: false }));
     sprite.renderOrder = 30;
     sprite.visible = false;
     this.scene.add(sprite);
     const ring = new THREE.Mesh(
       new THREE.RingGeometry(1.15, 1.45, 48),
-      new THREE.MeshBasicMaterial({ color: new THREE.Color(TARGET_RED).multiplyScalar(2.2), transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, toneMapped: false }),
+      new THREE.MeshBasicMaterial({ color: new THREE.Color(TARGET_RED).multiplyScalar(1.5), transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }),
     );
     ring.rotation.x = -Math.PI / 2;
     ring.visible = false;
@@ -127,7 +129,7 @@ export class Actors {
     // who the ball would go to if you deflected it now: a white ring under their feet
     const aim = new THREE.Mesh(
       new THREE.RingGeometry(0.95, 1.12, 40),
-      new THREE.MeshBasicMaterial({ color: new THREE.Color(2, 2, 2), transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, toneMapped: false }),
+      new THREE.MeshBasicMaterial({ color: new THREE.Color(1.3, 1.3, 1.3), transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }),
     );
     aim.rotation.x = -Math.PI / 2;
     aim.visible = false;
@@ -169,10 +171,10 @@ export class Actors {
       return r;
     }
     const col = new THREE.Color(color);
-    const suit = new THREE.MeshStandardMaterial({ color: col, vertexColors: true, roughness: 0.42, metalness: 0.22 });
-    const glow = new THREE.MeshBasicMaterial({ color: col.clone().multiplyScalar(GLOW), toneMapped: false, side: THREE.DoubleSide });
-    const bladeMat = new THREE.MeshBasicMaterial({ color: col.clone().multiplyScalar(GLOW), toneMapped: false });
-    const arcMat = new THREE.MeshBasicMaterial({ color: col.clone().multiplyScalar(2.2), transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, toneMapped: false });
+    const suit = new THREE.MeshStandardMaterial({ color: col.clone().multiplyScalar(SUIT), vertexColors: true, roughness: 0.42, metalness: 0.22 });
+    const glow = new THREE.MeshBasicMaterial({ color: col.clone().multiplyScalar(GLOW), side: THREE.DoubleSide });
+    const bladeMat = new THREE.MeshBasicMaterial({ color: col.clone().multiplyScalar(GLOW) });
+    const arcMat = new THREE.MeshBasicMaterial({ color: col.clone().multiplyScalar(1.6), transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
 
     const root = new THREE.Group();
     const rig = new THREE.Group();
@@ -215,7 +217,7 @@ export class Actors {
     tc.height = 90;
     const ttex = new THREE.CanvasTexture(tc);
     ttex.colorSpace = THREE.SRGBColorSpace;
-    const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: ttex, transparent: true, depthTest: false, depthWrite: false, toneMapped: false }));
+    const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: ttex, color: UI, transparent: true, depthTest: false, depthWrite: false }));
     sprite.renderOrder = 20;
     sprite.position.set(0, 2.65, 0);
     root.add(sprite);
@@ -223,13 +225,13 @@ export class Actors {
     // my own marker: a ring under the feet and an arrow above (only drawn for the local player)
     const ring = new THREE.Mesh(
       new THREE.RingGeometry(0.78, 1.0, 40),
-      new THREE.MeshBasicMaterial({ color: col.clone().multiplyScalar(2), transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, toneMapped: false }),
+      new THREE.MeshBasicMaterial({ color: col.clone().multiplyScalar(1.4), transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }),
     );
     ring.rotation.x = -Math.PI / 2;
     ring.position.y = 0.05;
     ring.visible = false;
     root.add(ring);
-    const arrow = new THREE.Mesh(new THREE.ConeGeometry(0.24, 0.5, 4), new THREE.MeshBasicMaterial({ color: new THREE.Color(1.8, 1.8, 1.8), toneMapped: false }));
+    const arrow = new THREE.Mesh(new THREE.ConeGeometry(0.24, 0.5, 4), new THREE.MeshBasicMaterial({ color: new THREE.Color(1.5, 1.5, 1.5) }));
     arrow.rotation.x = Math.PI;
     arrow.visible = false;
     root.add(arrow);
@@ -248,11 +250,11 @@ export class Actors {
   recolor(r, color) {
     r.hex = color;
     r.col.set(color);
-    r.suit.color.copy(r.col);
+    r.suit.color.copy(r.col).multiplyScalar(SUIT);
     r.glow.color.copy(r.col).multiplyScalar(GLOW);
     r.bladeMat.color.copy(r.col).multiplyScalar(GLOW);
-    r.arcMat.color.copy(r.col).multiplyScalar(2.2);
-    r.ring.material.color.copy(r.col).multiplyScalar(2);
+    r.arcMat.color.copy(r.col).multiplyScalar(1.6);
+    r.ring.material.color.copy(r.col).multiplyScalar(1.4);
     r.tag.key = '';
   }
 
@@ -426,7 +428,7 @@ export class Actors {
         r.arc.visible = true;
         r.arcPivot.rotation.y = lerp(-1.15, 1.15, e);
         r.arcMat.opacity = this.reduced ? 0.55 * (1 - t) : 0.95 * (1 - t * t);
-        r.bladeMat.color.copy(r.col).multiplyScalar(GLOW + (1 - t) * 3);
+        r.bladeMat.color.copy(r.col).multiplyScalar(GLOW + (1 - t) * 1.6);
         return;
       }
     }
@@ -483,18 +485,18 @@ export class BallView {
     this.group = new THREE.Group();
     this.col = new THREE.Color('#2de2ff');
     this.target = new THREE.Color('#2de2ff');
-    this.core = new THREE.Mesh(new THREE.SphereGeometry(0.7, 28, 18), new THREE.MeshBasicMaterial({ color: new THREE.Color(3, 3, 3), toneMapped: false }));
-    this.shellMat = new THREE.MeshBasicMaterial({ color: this.col.clone().multiplyScalar(2), transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false });
+    this.core = new THREE.Mesh(new THREE.SphereGeometry(0.7, 28, 18), new THREE.MeshBasicMaterial({ color: new THREE.Color(1.7, 1.7, 1.7) }));
+    this.shellMat = new THREE.MeshBasicMaterial({ color: this.col.clone().multiplyScalar(1.1), transparent: true, opacity: 0.32, blending: THREE.AdditiveBlending, depthWrite: false });
     this.shell = new THREE.Mesh(new THREE.SphereGeometry(1.0, 24, 16), this.shellMat);
-    this.haloMat = new THREE.SpriteMaterial({ map: radialTexture(128), color: this.col.clone().multiplyScalar(2), transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false });
+    this.haloMat = new THREE.SpriteMaterial({ map: radialTexture(128), color: this.col.clone().multiplyScalar(1.0), transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false });
     this.halo = new THREE.Sprite(this.haloMat);
-    this.halo.scale.set(5.5, 5.5, 1);
+    this.halo.scale.set(3.4, 3.4, 1);
     this.group.add(this.core, this.shell, this.halo);
     this.group.visible = false;
     scene.add(this.group);
 
     // the pool of light it throws on the floor
-    this.poolMat = new THREE.MeshBasicMaterial({ map: radialTexture(128), color: this.col.clone().multiplyScalar(1.6), transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false });
+    this.poolMat = new THREE.MeshBasicMaterial({ map: radialTexture(128), color: this.col.clone().multiplyScalar(0.9), transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false });
     this.pool = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), this.poolMat);
     this.pool.rotation.x = -Math.PI / 2;
     this.pool.visible = false;
@@ -514,7 +516,7 @@ export class BallView {
     for (let i = 0; i < this.N - 1; i++) idx.push(2 * i, 2 * i + 1, 2 * i + 2, 2 * i + 1, 2 * i + 3, 2 * i + 2);
     geo.setIndex(idx);
     this.trailGeo = geo;
-    this.trail = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, toneMapped: false }));
+    this.trail = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
     this.trail.frustumCulled = false;
     this.trail.visible = false;
     scene.add(this.trail);
@@ -523,7 +525,7 @@ export class BallView {
     this.lineGeo = new THREE.BufferGeometry();
     this.linePos = new Float32Array(6);
     this.lineGeo.setAttribute('position', new THREE.BufferAttribute(this.linePos, 3));
-    this.lineMat = new THREE.LineBasicMaterial({ color: this.col.clone().multiplyScalar(1.4), transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false });
+    this.lineMat = new THREE.LineBasicMaterial({ color: this.col.clone().multiplyScalar(1.1), transparent: true, opacity: 0.4, blending: THREE.AdditiveBlending, depthWrite: false });
     this.line = new THREE.Line(this.lineGeo, this.lineMat);
     this.line.frustumCulled = false;
     this.line.visible = false;
@@ -578,23 +580,23 @@ export class BallView {
     const scale = charging ? 0.15 + 0.85 * st.charge * st.charge : 1;
     this.group.position.set(st.x, st.y, st.z);
     this.group.scale.setScalar(scale * pulse);
-    this.shellMat.color.copy(c).multiplyScalar(2 + this.flare * 2);
-    this.shell.scale.setScalar(1 + this.flare * 0.3);
-    this.haloMat.color.copy(c).multiplyScalar(2 + this.flare * 2);
-    const hs = 5.5 + this.flare * 3 + (charging ? (1 - st.charge) * 6 : 0);
+    this.shellMat.color.copy(c).multiplyScalar(1.1 + this.flare * 0.9);
+    this.shell.scale.setScalar(1 + this.flare * 0.2);
+    this.haloMat.color.copy(c).multiplyScalar(1.0 + this.flare * 0.7);
+    const hs = 3.4 + this.flare * 1.4 + (charging ? (1 - st.charge) * 3 : 0);
     this.halo.scale.set(hs, hs, 1);
     this.light.color.copy(c);
     this.light.position.set(st.x, st.y + 0.3, st.z);
-    this.light.intensity = (live ? 260 : 80 * st.charge) * (1 + this.flare * 0.8);
+    this.light.intensity = (live ? 130 : 40 * st.charge) * (1 + this.flare * 0.5);
 
     // the pool of light on the floor
     const h = Math.max(0.2, st.y);
     this.pool.visible = true;
     this.pool.position.set(st.x, 0.05, st.z);
-    const ps = 7 + h * 0.8;
+    const ps = 5 + h * 0.6;
     this.pool.scale.set(ps, ps, 1);
-    this.poolMat.color.copy(c).multiplyScalar(1.6);
-    this.poolMat.opacity = clamp(0.75 - h * 0.05, 0.25, 0.7) * scale;
+    this.poolMat.color.copy(c).multiplyScalar(0.9);
+    this.poolMat.opacity = clamp(0.6 - h * 0.05, 0.2, 0.5) * scale;
 
     // the line to the target
     if (st.target && live) {
@@ -605,7 +607,7 @@ export class BallView {
       this.linePos[4] = st.target.y;
       this.linePos[5] = st.target.z;
       this.lineGeo.attributes.position.needsUpdate = true;
-      this.lineMat.color.copy(c).multiplyScalar(1.4);
+      this.lineMat.color.copy(c).multiplyScalar(1.1);
       this.line.visible = true;
     } else this.line.visible = false;
 
@@ -652,8 +654,8 @@ export class BallView {
     const N = this.N;
     const { v1, v2, v3 } = this;
     const c = this.col;
-    const width = (0.34 + clamp(speed / 260, 0, 0.3)) * (1 + this.flare * 1.3);
-    const gain = (fading ? this.fade : 1) * (1.6 + this.flare * 1.4);
+    const width = (0.22 + clamp(speed / 400, 0, 0.2)) * (1 + this.flare * 0.7);
+    const gain = (fading ? this.fade : 1) * (0.9 + this.flare * 0.7);
     for (let i = 0; i < N; i++) {
       const a = Math.max(0, i - 1);
       const b = Math.min(N - 1, i + 1);
@@ -673,9 +675,9 @@ export class BallView {
       this.trailPos[k + 4] = this.pts[i * 3 + 1] - v3.y * w;
       this.trailPos[k + 5] = this.pts[i * 3 + 2] - v3.z * w;
       const br = Math.pow(f, 1.4) * gain;
-      this.trailCol[k] = this.trailCol[k + 3] = c.r * br + br * 0.25;
-      this.trailCol[k + 1] = this.trailCol[k + 4] = c.g * br + br * 0.25;
-      this.trailCol[k + 2] = this.trailCol[k + 5] = c.b * br + br * 0.25;
+      this.trailCol[k] = this.trailCol[k + 3] = c.r * br + br * 0.12;
+      this.trailCol[k + 1] = this.trailCol[k + 4] = c.g * br + br * 0.12;
+      this.trailCol[k + 2] = this.trailCol[k + 5] = c.b * br + br * 0.12;
     }
     this.trailGeo.attributes.position.needsUpdate = true;
     this.trailGeo.attributes.color.needsUpdate = true;
