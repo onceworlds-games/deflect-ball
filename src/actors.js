@@ -168,7 +168,7 @@ export class Actors {
       return r;
     }
     const col = new THREE.Color(color);
-    const suit = new THREE.MeshStandardMaterial({ color: col, vertexColors: true, roughness: 0.42, metalness: 0.35 });
+    const suit = new THREE.MeshStandardMaterial({ color: col, vertexColors: true, roughness: 0.42, metalness: 0.22 });
     const glow = new THREE.MeshBasicMaterial({ color: col.clone().multiplyScalar(1.9), toneMapped: false, side: THREE.DoubleSide });
     const bladeMat = new THREE.MeshBasicMaterial({ color: col.clone().multiplyScalar(1.9), toneMapped: false });
     const arcMat = new THREE.MeshBasicMaterial({ color: col.clone().multiplyScalar(2.2), transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, toneMapped: false });

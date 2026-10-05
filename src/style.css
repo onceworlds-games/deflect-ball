@@ -59,6 +59,9 @@ kbd {
 #reticle .bg { stroke: rgba(255,255,255,0.22); stroke-width: 2.5; }
 #reticle .fg { stroke: #fff; stroke-width: 3.5; stroke-dasharray: 163.4; stroke-dashoffset: 0; }
 #reticle .dot { fill: #fff; }
+/* the ball's approach: a red ring that closes on the reticle; when it arrives, press */
+#reticle .appr { stroke: var(--red); stroke-width: 3; opacity: 0; filter: drop-shadow(0 0 4px rgba(255,43,63,0.8)); }
+#reticle.now .appr { stroke: #fff; stroke-width: 5; }
 #reticle.cool .fg { stroke: rgba(255,255,255,0.4); }
 #reticle.open .fg { stroke: var(--cy); stroke-width: 5; }
 #reticle.open .dot { fill: var(--cy); }

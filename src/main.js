@@ -127,6 +127,7 @@ async function boot() {
   let closed = false;
   let meOutAt = -1e9;
   let myPerfect = false;
+  let clashShown = false;
   const tmpA = { x: 0, y: 0, z: 0, r: 0, sw: 0 };
   const tmpB = { x: 0, y: 0, z: 0, r: 0, sw: 0 };
   const tmpC = { x: 0, y: 0, z: 0, r: 0, sw: 0 };
@@ -238,6 +239,7 @@ async function boot() {
       const pb = net.pose(b, tmpB);
       const proj = projectMid(pa, pb);
       hud.clash(`CLASH ×${n}`, proj.x, proj.y);
+      clashShown = true;
       if (n >= 6) rig.addTrauma(0.08);
     });
     net.on('clashwon', ({ id, n }) => {
@@ -486,7 +488,7 @@ async function boot() {
     actors.setTarget(null);
     actors.setAimMark(null);
     // the camera drifts round the arena
-    rig.orbit(dt, 0, 0, 0, 40, 17.5, 0.07);
+    rig.orbit(dt, 0, -1.5, 0, 31, 12, 0.07);
   }
 
   // ---------------------------------------------------------------- per frame: the world
@@ -635,7 +637,7 @@ async function boot() {
     ballState.y = charge > 0 && !live ? 1.6 : b.y + (live ? off.ey : 0);
     ballState.z = charge > 0 && !live ? 0 : b.z + (live ? off.ez : 0);
     ballState.speed = b.speed;
-    ballState.color = b.target ? colorFor(b.target) : '#2de2ff';
+    ballState.color = colorFor(b.target && b.target !== 'dummy' ? b.target : (b.by ?? me));
     ballState.target = live && b.target !== me ? target : null;
     actors.setTarget(live && b.target ? b.target : null, targetPose, b.target === me);
     // while the ball is mine: who it would go to, if I deflected now
@@ -729,8 +731,14 @@ async function boot() {
       fx.charge(0, 1.6, 0, '#2de2ff');
     }
 
+    // ---- a clash label goes when the back and forth does
+    if (clashShown && net.clashNow() < 3) {
+      hud.clearClash();
+      clashShown = false;
+    }
+
     // ---- the heads-up display
-    updateHud(ph, g, b, live, matchNow);
+    updateHud(ph, g, b, live, matchNow, mine ? tti : Infinity);
 
     // ---- the music
     const tense = live && (b.speed > 90 || (g && net.roster.length - g.out.length <= 3));
@@ -741,7 +749,7 @@ async function boot() {
   }
   let chargeSound = '';
 
-  function updateHud(ph, g, b, live, matchNow) {
+  function updateHud(ph, g, b, live, matchNow, approach) {
     const me = room.me.id;
     const inRound = (ph === 'intro' || ph === 'play' || ph === 'over') && !!g;
     const total = g ? g.rounds : ROUND_DEFAULT;
@@ -762,7 +770,7 @@ async function boot() {
     hud.watch(room.spectating ? 'WATCHING' : '');
     const playingNow = (ph === 'play' || ph === 'intro') && meIn && net.alive && net.active;
     const df = net.deflector();
-    hud.reticle(playingNow || ((ph === 'lobby' || ph === 'starting') && net.active), df.frac, df.open);
+    hud.reticle(playingNow || ((ph === 'lobby' || ph === 'starting') && net.active), df.frac, df.open, approach);
     hud.esc(input.locked);
     hud.aimHint(input.wantLock && !input.locked && !input.lockBroken && !touch());
 

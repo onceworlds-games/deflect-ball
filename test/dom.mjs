@@ -100,6 +100,12 @@ class Element extends Emitter {
   querySelector() {
     return new Element('span');
   }
+  setAttribute(k, v) {
+    (this.attrs ??= {})[k] = String(v);
+  }
+  getAttribute(k) {
+    return this.attrs?.[k] ?? null;
+  }
   setPointerCapture() {}
   releasePointerCapture() {}
   getContext() {

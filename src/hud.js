@@ -14,6 +14,7 @@ export function createHud() {
     you: $('you'), awards: $('awards'), title: $('title'), play: $('play'), notice: $('notice'), noticeText: $('noticeText'), noticeBtn: $('noticeBtn'),
   };
   const fg = el.reticle.querySelector('.fg');
+  const appr = el.reticle.querySelector('.appr');
   const last = new Map();
   /** Set a thing only if it changed (the DOM is slow to touch every frame). */
   const set = (key, value, apply) => {
@@ -109,13 +110,26 @@ export function createHud() {
       show(el.aimhint, on);
     },
     // -------------------------------------------------------------- the deflect button, as the reticle
-    reticle(on, frac, open) {
+    reticle(on, frac, open, tti = Infinity) {
       show(el.reticle, on);
       if (!on) return;
       set('ret', `${Math.round(frac * 40)}|${open ? 1 : 0}`, () => {
         fg.style.strokeDashoffset = String(163.4 * Math.max(0, Math.min(1, frac)));
         el.reticle.classList.toggle('open', !!open);
         el.reticle.classList.toggle('cool', !open && frac > 0.02);
+      });
+      // the approach ring: wide while the ball is a second or more away, closing on the reticle as it comes
+      const live = Number.isFinite(tti) && tti < 1.4;
+      const r = 26 + Math.max(0, Math.min(1, (tti - 0.25) / 1.1)) * 38;
+      set('appr', live ? `${Math.round(r)}|${tti <= 0.28 ? 1 : 0}` : 'off', () => {
+        if (!live) {
+          appr.style.opacity = '0';
+          el.reticle.classList.remove('now');
+          return;
+        }
+        appr.setAttribute('r', String(r));
+        appr.style.opacity = String(Math.max(0.35, 1 - (r - 26) / 60));
+        el.reticle.classList.toggle('now', tti <= 0.28);
       });
     },
     // -------------------------------------------------------------- the ball coming for you
