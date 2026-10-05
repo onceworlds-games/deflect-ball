@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>Deflect Ball</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,500;0,600;0,700;1,700&display=swap" rel="stylesheet">
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="ui">
+  <div id="edge"></div>
+  <div id="flash"></div>
+
+  <div id="top" class="hidden">
+    <div class="seg"><b>ROUND</b><span id="roundNo">1/5</span></div>
+    <div class="seg"><b>ALIVE</b><span id="aliveNo">8</span></div>
+    <div class="seg"><b>SPEED</b><span id="speedNo">20</span></div>
+  </div>
+  <div id="me" class="hidden">
+    <div class="pts"><span id="ptsNo">0</span><b>PTS</b></div>
+    <div id="status">ALIVE</div>
+    <div id="esc" class="hidden"><kbd>ESC</kbd></div>
+  </div>
+
+  <div id="reticle" class="hidden">
+    <svg viewBox="0 0 64 64" width="64" height="64"><circle class="bg" cx="32" cy="32" r="26"/><circle class="fg" cx="32" cy="32" r="26" transform="rotate(-90 32 32)"/><circle class="dot" cx="32" cy="32" r="2.4"/></svg>
+  </div>
+  <div id="arrow" class="hidden"><i></i></div>
+  <div id="callout"></div>
+  <div id="clash"></div>
+  <div id="banner"><div id="bannerBig"></div><div id="bannerSmall"></div></div>
+  <div id="count"></div>
+  <div id="watch" class="hidden">WATCHING</div>
+  <div id="aimhint" class="hidden"><kbd>CLICK</kbd> AIM</div>
+
+  <div id="lobby" class="hidden">
+    <div id="settings"><b>ROUNDS</b><button id="setDown" aria-label="Fewer rounds">&#8249;</button><span id="setVal">5</span><button id="setUp" aria-label="More rounds">&#8250;</button></div>
+    <div id="hint"><span id="hintText">DEFLECT THE BALL</span><kbd id="hintKey">CLICK</kbd></div>
+    <button id="stubStart" class="hidden">START <kbd>ENTER</kbd></button>
+  </div>
+
+  <div id="board" class="hidden"><div id="boardTitle"></div><div id="boardRows"></div></div>
+  <div id="results" class="hidden">
+    <div id="resTitle">RESULTS</div>
+    <div id="podium"></div>
+    <div id="you"></div>
+    <div id="awards"></div>
+  </div>
+
+  <div id="title">
+    <div id="logo"><div class="l1">DEFLECT</div><div class="l2"><i class="orb"></i>BALL</div></div>
+    <button id="play" class="hidden"><span>PLAY</span><kbd>SPACE</kbd></button>
+  </div>
+  <div id="notice" class="hidden"><div id="noticeBox"><div id="noticeText"></div><button id="noticeBtn" class="hidden"></button></div></div>
+</div>
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>
