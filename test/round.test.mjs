@@ -263,3 +263,21 @@ test('a new host picks a round up where it was', () => {
   run(b, 60);
   assert.ok(b.over, 'and it finishes');
 });
+
+test('once every person is out the ball speeds up so watchers are not kept waiting', () => {
+  const gain = (humanAlive) => {
+    const r = make(8, 1);
+    toPlay(r);
+    r.ball.target = 'bot3';
+    r.ball.age = 5;
+    if (!humanAlive) r.eliminate(r.players.get('h1'), 'fall');
+    r.ball.target = 'bot3';
+    r.ball.pend = 0;
+    const s0 = r.ball.speed;
+    for (let i = 0; i < 15; i++) r.step(STEP); // a quarter of a second: no contact yet
+    return r.ball.speed - s0;
+  };
+  const slow = gain(true);
+  const fast = gain(false);
+  assert.ok(slow > 0 && fast > slow * 3, `${slow} vs ${fast}`);
+});

@@ -174,7 +174,9 @@ export class Round {
       return;
     }
     b.age += dt;
-    b.speed = Math.min(SPEED_MAX, b.speed + rampAt(b.age) * this.rampScale * dt);
+    // once every person is out the bots finish it quickly: a spectator isn't kept waiting
+    const hurry = this.list.some((p) => !p.bot) && !this.list.some((p) => !p.bot && p.alive) ? 4 : 1;
+    b.speed = Math.min(SPEED_MAX, b.speed + rampAt(b.age) * this.rampScale * hurry * dt);
     const cy = tp.body.y + CHEST;
     stepBall(b, tp.body.x, cy, tp.body.z, dt);
     if (sweptHit(b, tp.body.x, cy, tp.body.z, HIT_R)) this.impact(tp);

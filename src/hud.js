@@ -137,8 +137,10 @@ export function createHud() {
       set('edge', Math.round(alpha * 50), () => (el.edge.style.opacity = String(Math.max(0, Math.min(1, alpha)))));
     },
     flash(alpha, color = '#fff') {
-      el.flash.style.background = color;
-      el.flash.style.opacity = String(Math.max(0, Math.min(1, alpha)));
+      set('flash', `${Math.round(alpha * 100)}|${color}`, () => {
+        el.flash.style.background = color;
+        el.flash.style.opacity = String(Math.max(0, Math.min(1, alpha)));
+      });
     },
     arrow(on, x, y, deg, color) {
       show(el.arrow, on);

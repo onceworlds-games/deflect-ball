@@ -214,3 +214,23 @@ test('the match waits while paused and goes on afterwards', () => {
   assert.notEqual(ann.net.ballView().x, ballBefore.x, 'moving again');
   noErrors(hub);
 });
+
+test('a host who is not playing (on the title screen, say) still runs the match for the people who are', () => {
+  const hub = new Hub({ seed: 4, rounds: 3 });
+  const ann = new Player(hub, 'ann', { seed: 1 }); // the host, and not in the match
+  const bob = new Player(hub, 'bob', { seed: 2 });
+  hub.begin(['bob']);
+  assert.equal(hub.host, 'ann');
+  const start = hub.ended;
+  let s = 0;
+  while (hub.ended === start && s < 900) {
+    // only the timers of ann's page run: no frames, like a page sitting on the title
+    hub.advance(1000, () => bob.frame());
+    s++;
+  }
+  assert.ok(hub.ended > start, 'the match ended');
+  noErrors(hub);
+  assert.equal(count(bob, 'final'), 1);
+  assert.ok(count(bob, 'out') >= 3 * 5);
+  void ann;
+});
