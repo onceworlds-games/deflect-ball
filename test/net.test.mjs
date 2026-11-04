@@ -215,7 +215,7 @@ test('the match waits while paused and goes on afterwards', () => {
   noErrors(hub);
 });
 
-test('a host who is not playing (on the title screen, say) still runs the match for the people who are', () => {
+test('a host who is not in the match still runs the match for the people who are', () => {
   const hub = new Hub({ seed: 4, rounds: 3 });
   const ann = new Player(hub, 'ann', { seed: 1 }); // the host, and not in the match
   const bob = new Player(hub, 'bob', { seed: 2 });

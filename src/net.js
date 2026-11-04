@@ -6,7 +6,7 @@
 //  - presence: your own body, ~20 Hz. Others are drawn with presenceAt.
 //  - a message `{ t: 'deflect', rid, n, to, aim }` to the host: the target's own page decides its deflect.
 import {
-  STEP, CHEST, HIT_R, INTRO_S, OVER_MS, FINAL_MS, PRESENCE_MS, SNAP_HZ_MAX, SNAP_HZ_MIN, CLASH_MIN, PERFECT_S, ROUND_DEFAULT, MAX_PLAYERS,
+  STEP, CHEST, HIT_R, INTRO_S, FIRST_INTRO_S, OVER_MS, FINAL_MS, PRESENCE_MS, SNAP_HZ_MAX, SNAP_HZ_MIN, CLASH_MIN, PERFECT_S, ROUND_DEFAULT, MAX_PLAYERS,
   clamp, num,
 } from './config.js';
 import {
@@ -402,9 +402,10 @@ export function createNet(
   }
 
   // ---------------------------------------------------------------- the host runs the rules
+  const introOf = (n) => (n === 1 ? FIRST_INTRO_S : INTRO_S);
   function makeEngine(g) {
     const roster = g.roster.map((r) => ({ id: r.id, bot: !!r.b }));
-    return new Round({ rid: g.rid, roster, slots: spawnSlots(roster.length, g.rid), seed: hashString(g.rid), brains: H.brains });
+    return new Round({ rid: g.rid, roster, slots: spawnSlots(roster.length, g.rid), seed: hashString(g.rid), brains: H.brains, introS: introOf(g.n) });
   }
 
   function flushG(force = false) {
@@ -445,7 +446,7 @@ export function createNet(
     g.rid = `${g.mid}.${n}`;
     g.t0 = Math.round(now);
     g.phase = 'intro';
-    g.until = g.t0 + INTRO_S * 1000;
+    g.until = g.t0 + introOf(n) * 1000;
     g.out = [];
     g.dc = {};
     g.win = null;
@@ -900,7 +901,6 @@ export function createNet(
     press() {
       L.pressQ = true;
     },
-    /** The player pressed Play: the world starts to be theirs. */
     setActive(on) {
       L.active = !!on;
       if (on && !L.body) L.body = lobbyBody();

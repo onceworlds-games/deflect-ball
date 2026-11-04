@@ -268,7 +268,9 @@ export class FakeRoom {
   }
   setReady() {}
   clearReady() {}
-  hideLobby() {}
+  hideLobby() {
+    throw new Error('the strip stays: no hideLobby');
+  }
   setSetting() {}
 }
 

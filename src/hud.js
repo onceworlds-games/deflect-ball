@@ -8,10 +8,10 @@ export function createHud() {
   const el = {
     edge: $('edge'), flash: $('flash'), top: $('top'), roundNo: $('roundNo'), aliveNo: $('aliveNo'), speedNo: $('speedNo'),
     me: $('me'), ptsNo: $('ptsNo'), status: $('status'), esc: $('esc'), reticle: $('reticle'), arrow: $('arrow'), callout: $('callout'), clash: $('clash'),
-    banner: $('banner'), bannerBig: $('bannerBig'), bannerSmall: $('bannerSmall'), count: $('count'), watch: $('watch'), aimhint: $('aimhint'),
+    banner: $('banner'), bannerBig: $('bannerBig'), bannerSmall: $('bannerSmall'), watch: $('watch'), aimhint: $('aimhint'),
     lobby: $('lobby'), settings: $('settings'), setDown: $('setDown'), setUp: $('setUp'), setVal: $('setVal'), hint: $('hint'), hintText: $('hintText'), hintKey: $('hintKey'),
     stubStart: $('stubStart'), board: $('board'), boardTitle: $('boardTitle'), boardRows: $('boardRows'), results: $('results'), resTitle: $('resTitle'), podium: $('podium'),
-    you: $('you'), awards: $('awards'), title: $('title'), play: $('play'), notice: $('notice'), noticeText: $('noticeText'), noticeBtn: $('noticeBtn'),
+    you: $('you'), awards: $('awards'), title: $('title'), notice: $('notice'), noticeText: $('noticeText'), noticeBtn: $('noticeBtn'),
   };
   const fg = el.reticle.querySelector('.fg');
   const appr = el.reticle.querySelector('.appr');
@@ -58,12 +58,6 @@ export function createHud() {
     // -------------------------------------------------------------- title
     title(on) {
       show(el.title, on);
-    },
-    playReady(on) {
-      show(el.play, on);
-    },
-    onPlay(fn) {
-      el.play.addEventListener('click', fn);
     },
     /** One message and (maybe) one button, over everything. */
     notice(message, label = '', onClick = null) {
@@ -180,15 +174,6 @@ export function createHud() {
     hideBanner() {
       el.banner.classList.remove('show');
       el.banner.style.opacity = '0';
-    },
-    count(value) {
-      el.count.textContent = String(value);
-      el.count.classList.toggle('go', value === 'GO');
-      restart(el.count);
-    },
-    hideCount() {
-      el.count.classList.remove('show');
-      el.count.style.opacity = '0';
     },
     // -------------------------------------------------------------- the lobby
     lobby(on, { rounds, host, hintKey, hintText, hint = true, stub }) {

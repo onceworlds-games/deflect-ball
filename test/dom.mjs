@@ -130,7 +130,7 @@ export function installDom({ width = 1280, height = 720 } = {}) {
   const ids = [...html.matchAll(/id="([^"]+)"/g)].map((m) => m[1]);
   const byId = new Map();
   for (const id of ids) byId.set(id, new Element(id === 'c' ? 'canvas' : 'div', id));
-  for (const id of ['setDown', 'setUp', 'play', 'stubStart', 'noticeBtn']) byId.get(id).tagName = 'BUTTON';
+  for (const id of ['setDown', 'setUp', 'stubStart', 'noticeBtn']) byId.get(id).tagName = 'BUTTON';
   // `hidden` is a class the game toggles: the elements marked hidden in the markup start hidden
   for (const m of html.matchAll(/<[^>]*id="([^"]+)"[^>]*class="([^"]*)"/g)) for (const c of m[2].split(/\s+/)) byId.get(m[1])?._classes.add(c);
 

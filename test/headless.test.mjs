@@ -35,15 +35,12 @@ async function bootGame({ search = '', sdk } = {}) {
 
 const visible = (dom, id) => !dom.byId.get(id).classList.contains('hidden');
 
-test('the page boots, shows the title with Play, and Play goes to the lobby', async () => {
+test('the page boots straight into the lobby: no title to press, the host can set the rounds', async () => {
   const { dom, clock } = await bootGame();
   assert.deepEqual(errors, [], `console errors: ${errors.join('\n')}`);
-  assert.ok(visible(dom, 'title'), 'the title shows');
-  assert.ok(visible(dom, 'play'), 'with a Play button');
-  for (let i = 0; i < 120; i++) clock.frame(); // two seconds of the demo
-  dom.byId.get('play').dispatch('click');
   for (let i = 0; i < 60; i++) clock.frame();
-  assert.ok(!visible(dom, 'title'), 'Play hides the title');
+  assert.ok(!visible(dom, 'title'), 'the logo goes once the world is up');
+  assert.ok(!dom.byId.has('play') && !dom.byId.has('count'), 'no Play button, no numbers of its own');
   assert.ok(visible(dom, 'lobby'), 'the lobby shows');
   assert.equal(dom.byId.get('setVal').textContent, '5', 'rounds as a big value');
   // the host's tap targets change it
@@ -69,9 +66,9 @@ test('the page boots, shows the title with Play, and Play goes to the lobby', as
   globalThis.__game = { dom, clock };
 });
 
-test('a match from the lobby: countdown, rounds, results, back to the lobby (a player who plays)', async () => {
+test('a match from the lobby: rounds, results, back to the lobby (a player who plays)', async () => {
   const { dom, clock } = globalThis.__game;
-  const seen = { count: new Set(), banner: new Set(), top: false, board: false, results: false, callouts: new Set(), reticle: false };
+  const seen = { banner: new Set(), top: false, board: false, results: false, callouts: new Set(), reticle: false };
   const key = (code, down = true) => globalThis.dispatchWindowEvent(down ? 'keydown' : 'keyup', { code, repeat: false, key: code });
   // the start button of the stand-in room (the platform draws Ready/Start for real)
   dom.byId.get('stubStart').dispatch('click');
@@ -91,8 +88,6 @@ test('a match from the lobby: countdown, rounds, results, back to the lobby (a p
     if (i % 41 === 0) globalThis.dispatchWindowEvent('pointermove', { pointerType: 'mouse', movementX: 7, movementY: -2, pointerId: 1 });
     clock.frame();
     if (i % 10 === 0) {
-      const n = dom.byId.get('count').textContent;
-      if (n) seen.count.add(n);
       const b = dom.byId.get('bannerBig').textContent;
       if (b) seen.banner.add(b);
       if (visible(dom, 'top')) seen.top = true;
@@ -102,16 +97,15 @@ test('a match from the lobby: countdown, rounds, results, back to the lobby (a p
       const c = dom.byId.get('callout').textContent;
       if (c) seen.callouts.add(c.replace(/[0-9]+/g, '#'));
     }
-    if (seen.results && visible(dom, 'lobby') && !visible(dom, 'board') && dom.byId.get('count').textContent !== '') phaseOver++;
     if (seen.results && i > 60 * 40 && dom.byId.get('setVal') && visible(dom, 'lobby') && !visible(dom, 'top')) {
       // back in the lobby after the final round
       if (++phaseOver > 120) break;
     }
   }
-  console.log('seen', [...seen.count].join(','), [...seen.banner].slice(0, 6).join('|'), [...seen.callouts].slice(0, 8).join('|'));
+  console.log('seen', [...seen.banner].slice(0, 6).join('|'), [...seen.callouts].slice(0, 8).join('|'));
   assert.deepEqual(errors, [], `console errors: ${errors.join('\n')}`);
-  assert.ok(seen.count.has('3') && seen.count.has('1'), 'a 3-2-1 countdown');
-  assert.ok([...seen.banner].some((b) => b.startsWith('ROUND')), 'a round banner');
+  assert.ok(!seen.banner.has('ROUND 1'), 'round 1 just starts: the platform has counted down');
+  assert.ok(seen.banner.has('ROUND 2'), 'a banner for the rounds after it');
   assert.ok(seen.top, 'the top bar');
   assert.ok(seen.board, 'a scoreboard between rounds');
   assert.ok(seen.results, 'the results');
@@ -122,7 +116,6 @@ test('a match from the lobby: countdown, rounds, results, back to the lobby (a p
 /** Play (or don't) a whole match on the stand-in platform. `act(i, key)` is called every frame. */
 async function playMatch({ sdk, act, minRounds = 5, seconds = 700 }) {
   const { dom, clock } = await bootGame({ sdk });
-  dom.byId.get('play').dispatch('click');
   for (let i = 0; i < 30; i++) clock.frame();
   dom.byId.get('stubStart').dispatch('click');
   const key = (code, down = true) => globalThis.dispatchWindowEvent(down ? 'keydown' : 'keyup', { code, repeat: false, key: code });
@@ -142,7 +135,7 @@ async function playMatch({ sdk, act, minRounds = 5, seconds = 700 }) {
     if (results && !visible(dom, 'top') && visible(dom, 'lobby') && ++after > 60) break;
   }
   assert.deepEqual(errors, [], `console errors: ${errors.join('\n')}`);
-  assert.ok(banners.size >= minRounds, `rounds seen: ${[...banners].join(',')}`);
+  assert.ok(banners.size >= minRounds - 1, `rounds seen: ${[...banners].join(',')}`);
   assert.ok(results && board, 'a scoreboard and the results');
   return { dom, clock };
 }

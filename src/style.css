@@ -107,14 +107,6 @@ kbd {
   100% { opacity: 0; transform: translateX(40px); }
 }
 
-#count {
-  position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%); text-align: center; font-size: clamp(120px, 28vmin, 300px); font-style: italic; line-height: 1;
-  text-shadow: 0 0 2px #000, 0 6px 0 rgba(0,0,0,0.45), 0 0 40px rgba(0,0,0,0.6); opacity: 0;
-}
-#count.show { animation: count 0.9s ease-out forwards; }
-@keyframes count { 0% { opacity: 0; transform: translateY(-50%) scale(1.9); } 18% { opacity: 1; transform: translateY(-50%) scale(1); } 80% { opacity: 1; } 100% { opacity: 0; transform: translateY(-50%) scale(0.85); } }
-#count.go { color: var(--cy); }
-
 #watch { position: absolute; right: max(10px, env(safe-area-inset-right)); top: calc(max(8px, env(safe-area-inset-top)) + 4px); padding: 4px 12px; background: var(--bg); border-bottom: 2px solid var(--dim); font-size: 13px; letter-spacing: 0.22em; }
 #aimhint {
   position: absolute; left: 50%; bottom: calc(max(18px, env(safe-area-inset-bottom)) + 8px); transform: translateX(-50%); padding: 6px 16px; background: var(--bg);
@@ -183,24 +175,14 @@ kbd {
 #logo .l1 { font-size: clamp(56px, 15vmin, 168px); letter-spacing: 0.02em; text-shadow: 0 0 2px #000, 0 6px 0 rgba(0,0,0,0.45), 0 0 40px rgba(0,0,0,0.6); }
 #logo .l2 { display: flex; align-items: center; justify-content: center; font-size: clamp(56px, 15vmin, 168px); color: var(--cy); letter-spacing: 0.1em; text-shadow: 0 0 2px #000, 0 6px 0 rgba(0,0,0,0.45), 0 0 50px rgba(45,226,255,0.55); }
 .orb { display: inline-block; width: 0.5em; height: 0.5em; margin-right: 0.22em; border-radius: 50%; background: radial-gradient(circle at 40% 38%, #fff 0 28%, #2de2ff 62%, #0a8aa8 100%); box-shadow: 0 0 28px 6px rgba(45,226,255,0.8), -0.7em 0 0.3em -0.05em rgba(45,226,255,0.5), -1.3em 0 0.5em -0.15em rgba(45,226,255,0.25); }
-#play {
-  min-width: clamp(200px, 30vmin, 300px); height: clamp(56px, 11vmin, 84px); border: 0; background: var(--cy); color: #04121a; font-size: clamp(26px, 5.4vmin, 40px); letter-spacing: 0.22em;
-  clip-path: polygon(16px 0, 100% 0, calc(100% - 16px) 100%, 0 100%); cursor: pointer; box-shadow: 0 0 0 0 transparent; animation: breathe 1.8s ease-in-out infinite;
-}
-#play kbd { color: #04121a; border-color: rgba(4,18,26,0.55); background: transparent; letter-spacing: 0.08em; }
-#play:hover { background: #7df0ff; }
-#play:active { background: #fff; }
-@keyframes breathe { 50% { filter: brightness(1.18); } }
 #notice { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; text-align: center; padding: 24px; background: rgba(7,8,22,0.92); font-size: 24px; letter-spacing: 0.16em; pointer-events: auto; }
 #noticeBox { display: flex; flex-direction: column; align-items: center; gap: 22px; }
 #noticeBtn { min-width: 200px; height: 58px; border: 0; background: var(--cy); color: #04121a; font-size: 26px; letter-spacing: 0.2em; cursor: pointer; clip-path: polygon(14px 0, 100% 0, calc(100% - 14px) 100%, 0 100%); }
 
-body.reduced #play { animation: none; }
 /* reduced motion: things appear and fade; nothing slides, pops or pulses */
 @keyframes fade { 0%, 75% { opacity: 1; } 100% { opacity: 0; } }
 body.reduced #callout.show { animation: fade 1.3s linear forwards; }
 body.reduced #banner.show { animation: fade 2.4s linear forwards; }
-body.reduced #count.show { animation: fade 0.9s linear forwards; }
 body.reduced #clash.show { animation: none; opacity: 1; }
 
 @media (max-height: 460px) {

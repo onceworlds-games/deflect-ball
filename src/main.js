@@ -1,5 +1,5 @@
-// Deflect Ball: the page. Joins the room first, then builds the world; the title shows a demo of bots playing, Play starts the music
-// and goes to the lobby (the world, live: move, try the controls, a slow practice ball), and the host's rounds take it from there.
+// Deflect Ball: the page. Joins the room first, then builds the world: the lobby is the world, live (move, try the controls, a slow
+// practice ball), under the platform's strip, and the host's rounds take it from there.
 import './style.css';
 import * as THREE from 'three';
 import { createStage } from './scene.js';
@@ -10,7 +10,6 @@ import { createAudio } from './audio.js';
 import { createHud } from './hud.js';
 import { createInput } from './input.js';
 import { createNet } from './net.js';
-import { Demo } from './demo.js';
 import { createStub } from './stub.js';
 import { setAvatarSource } from './avatars.js';
 import { colorOf, ordinal } from './match.js';
@@ -48,11 +47,6 @@ async function boot() {
     hud.notice('CAN’T CONNECT');
     return;
   }
-  try {
-    room.hideLobby();
-  } catch {
-    /* no platform lobby around */
-  }
   setAvatarSource((id) => ow.player.avatarUrl(id, 'head'));
 
   const canvas = document.getElementById('c');
@@ -71,7 +65,6 @@ async function boot() {
   const ball = new BallView(scene, stage.ballLight, camera);
   const fx = new Fx(scene, camera);
   const audio = createAudio();
-  const demo = new Demo((Math.random() * 1e6) | 0);
 
   // ---------------------------------------------------------------- settings: quality, reduced motion, size
   function layout() {
@@ -112,7 +105,6 @@ async function boot() {
   };
 
   // ---------------------------------------------------------------- the page's own state
-  let mode = 'title'; // 'title' until Play, then 'world'
   let net = null;
   let input = null;
   let hitStop = 0;
@@ -148,23 +140,18 @@ async function boot() {
   function attach() {
     if (net) net.stop();
     net = createNet(room);
-    input = input ?? createInput(canvas, { onPress: () => net?.press(), active: () => mode === 'world' && !!net && net.active });
+    input = input ?? createInput(canvas, { onPress: () => net?.press(), active: () => !!net && net.active });
     wireNet();
     wireRoom();
-    if (mode === 'world') net.setActive(true);
+    net.setActive(true);
   }
 
   function wireRoom() {
     room.on('starting', () => {
       countLast = -1;
     });
-    room.on('matchstart', () => {
-      if (mode !== 'world') return;
-      hud.count('GO');
-      audio.sfx.go();
-    });
+    room.on('matchstart', () => audio.sfx.go());
     room.on('matchend', (match, previous) => {
-      hud.hideCount();
       hud.hideBanner();
       countLast = -1;
       // the results stay up over the lobby for a few seconds
@@ -175,13 +162,12 @@ async function boot() {
       const text = reason === 'kicked' ? 'YOU WERE REMOVED' : reason === 'replaced' ? 'PLAYING IN ANOTHER TAB' : reason === 'disconnected' ? 'DISCONNECTED' : '';
       if (!text) return;
       closed = true;
-      hud.notice(text, reason === 'disconnected' ? 'REJOIN' : 'PLAY', async () => {
+      hud.notice(text, 'REJOIN', async () => {
         try {
           room = await ow.rooms.join(JOIN);
           closed = false;
           hud.hideNotice();
           attach();
-          if (mode === 'title') room.hideLobby();
         } catch (err) {
           console.error('[deflect-ball] rejoin', err);
         }
@@ -202,6 +188,7 @@ async function boot() {
         rig.cut();
       }
       meDraw.have = false;
+      if (n === 1) return; // the platform's countdown just said go
       hud.banner(`ROUND ${n}`, n === total ? 'FINAL ROUND' : 'LAST ONE STANDING');
       audio.sfx.tick();
     });
@@ -393,34 +380,11 @@ async function boot() {
     return { x: clamp((v3.x * 0.5 + 0.5) * w, 90, w - 90), y: clamp((-v3.y * 0.5 + 0.5) * h, 90, h - 90) };
   }
 
-  // ---------------------------------------------------------------- Play
-  function play() {
-    if (mode !== 'title' || closed) return;
-    mode = 'world';
-    audio.start();
-    audio.sfx.tick();
-    hud.title(false);
-    input.clearQueue();
-    try {
-      room.hideLobby(false);
-    } catch {
-      /* fine */
-    }
-    actors.clearExcept(new Set());
-    fx.clear();
-    ball.clearTrail();
-    net.setActive(true);
-    if (net.body) rig.setYaw(net.body.yaw);
-    rig.pitch = 0.12;
-    rig.cut();
-    meDraw.have = false;
-  }
-  hud.onPlay(play);
+  // ---------------------------------------------------------------- the first press anywhere starts the sound
+  addEventListener('pointerdown', () => audio.start());
   addEventListener('keydown', (e) => {
-    if (mode === 'title' && (e.code === 'Space' || e.code === 'Enter') && !e.repeat) {
-      e.preventDefault();
-      play();
-    } else if (stub && mode === 'world' && e.code === 'Enter' && room.match.phase === 'lobby') room.startMatch();
+    audio.start();
+    if (stub && e.code === 'Enter' && room.match.phase === 'lobby') room.startMatch();
   });
   hud.onStubStart(() => room.startMatch());
   hud.onSetting((dir) => {
@@ -432,64 +396,10 @@ async function boot() {
   });
 
   attach();
-  hud.playReady(true);
-
-  // ---------------------------------------------------------------- per frame: the title's demo
-  const demoSeen = { n: 0 };
-  function titleFrame(dt) {
-    demo.step(dt);
-    const r = demo.round;
-    if (demoSeen.n !== demo.n) {
-      demoSeen.n = demo.n;
-      fx.clear();
-      ball.clearTrail();
-    }
-    const keep = new Set();
-    for (const p of r.list) {
-      const rec = demo.roster[p.idx];
-      keep.add(p.id);
-      actors.ensure(p.id, { name: rec.name, color: colorOf(p.idx), bot: true });
-      tmpA.x = p.body.x;
-      tmpA.y = p.body.y;
-      tmpA.z = p.body.z;
-      tmpA.r = p.body.yaw;
-      tmpA.sw = p.def.presses;
-      actors.update(p.id, tmpA, dt, { show: p.alive, tag: false });
-    }
-    actors.clearExcept(keep);
-    for (const e of demo.events) {
-      if (e.type === 'deflect') {
-        const a = r.players.get(e.by);
-        const b = r.players.get(e.to);
-        if (a && b) {
-          const dx = b.body.x - a.body.x;
-          const dz = b.body.z - a.body.z;
-          const l = Math.hypot(dx, dz) || 1;
-          fx.deflect(a.body.x, a.body.y + CHEST + 0.2, a.body.z, dx / l, 0, dz / l, colorOf(a.idx), clamp(e.speed / 150, 0.15, 1));
-          ball.doFlare();
-        }
-      } else if (e.type === 'out') {
-        const p = r.players.get(e.id);
-        if (p) fx.shatter(e.x, Math.max(0, e.y), e.z, colorOf(p.idx));
-      } else if (e.type === 'play') fx.launch(0, 1.6, 0, '#2de2ff');
-    }
-    demo.events.length = 0;
-    const b = r.ball;
-    const tgt = b.target ? r.players.get(b.target) : null;
-    const charge = r.phase === 'intro' ? clamp(r.t / r.introS, 0, 1) : 0;
-    ballState.active = b.active;
-    ballState.charge = charge;
-    ballState.x = charge > 0 ? 0 : b.x;
-    ballState.y = charge > 0 ? 1.6 : b.y;
-    ballState.z = charge > 0 ? 0 : b.z;
-    ballState.speed = b.speed;
-    ballState.color = tgt ? colorOf(tgt.idx) : '#2de2ff';
-    ballState.target = tgt ? targetPoint.set(tgt.body.x, tgt.body.y + CHEST, tgt.body.z) : null;
-    actors.setTarget(null);
-    actors.setAimMark(null);
-    // the camera drifts round the arena
-    rig.orbit(dt, 0, -1.5, 0, 31, 12, 0.07);
-  }
+  hud.title(false);
+  if (net.body) rig.setYaw(net.body.yaw);
+  rig.pitch = 0.12;
+  rig.cut();
 
   // ---------------------------------------------------------------- per frame: the world
   const ballState = { active: false, charge: 0, x: 0, y: 0, z: 0, speed: 0, color: '#2de2ff', target: null };
@@ -609,8 +519,7 @@ async function boot() {
         pose.z = meDraw.z;
       }
       const out = inMatch && net.isOut(id);
-      const ready = !inMatch && !!room.players.get(id)?.ready;
-      actors.update(id, pose, vdt, { show: !out, me: isMe, ready, arrow: isMe && ph === 'intro', tag: true });
+      actors.update(id, pose, vdt, { show: !out, me: isMe, arrow: isMe && ph === 'intro', tag: true });
     }
     actors.clearExcept(ids);
 
@@ -723,8 +632,7 @@ async function boot() {
         const n = Math.ceil((at - ow.now()) / 1000);
         if (n >= 1 && n <= 3 && n !== countLast) {
           countLast = n;
-          hud.count(n);
-          audio.sfx.count(n);
+          audio.sfx.count(n); // under the platform's numbers
         }
       }
     }
@@ -825,8 +733,7 @@ async function boot() {
         hitStop = 0;
         slow = 0;
       }
-      if (mode === 'title') titleFrame(dt);
-      else if (!closed) worldFrame(dt, vdt);
+      if (!closed) worldFrame(dt, vdt);
       else input.setWantLock(false);
       // flashes fade quickly
       flashA = Math.max(0, flashA - dt * 3.2);

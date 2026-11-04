@@ -286,8 +286,8 @@ export class Actors {
     });
   }
 
-  drawTag(r, ready) {
-    const key = `${r.name}|${ready ? 1 : 0}|${r.hex}`;
+  drawTag(r) {
+    const key = `${r.name}|${r.hex}`;
     if (r.tag.key === key) return;
     r.tag.key = key;
     const g = r.tag.ctx;
@@ -304,16 +304,11 @@ export class Actors {
     g.fillStyle = '#ffffff';
     let text = String(r.name || '').toUpperCase();
     if (text.length > 14) text = `${text.slice(0, 13)}…`;
-    g.fillText(text, 92, ready ? 32 : 42, 218);
-    if (ready) {
-      g.font = '700 22px "Chakra Petch", sans-serif';
-      g.fillStyle = '#8dff4d';
-      g.fillText('✓ READY', 92, 64);
-    }
+    g.fillText(text, 92, 42, 218);
     r.tag.tex.needsUpdate = true;
   }
 
-  /** Put a runner where it is and animate it. `pose`: { x, y, z, r, sw } or null. opts: { show, me, ready, tag, arrow, swingNow }. */
+  /** Put a runner where it is and animate it. `pose`: { x, y, z, r, sw } or null. opts: { show, me, tag, arrow, swingNow }. */
   update(id, pose, dt, opts = {}) {
     const r = this.map.get(id);
     if (!r) return;
@@ -392,7 +387,7 @@ export class Actors {
     const showTag = opts.tag !== false && !opts.me;
     r.tag.sprite.visible = showTag;
     if (showTag) {
-      this.drawTag(r, !!opts.ready);
+      this.drawTag(r);
       const dx = this.camera.position.x - pose.x;
       const dy = this.camera.position.y - (pose.y + 2.65);
       const dz = this.camera.position.z - pose.z;

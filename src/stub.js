@@ -62,7 +62,6 @@ export function createStub() {
     send() {},
     setReady() {},
     clearReady() {},
-    hideLobby() {},
     setSetting(id, value) {
       room.settingsValues[id] = value;
       emit('settings', room.settingsValues);
@@ -70,14 +69,14 @@ export function createStub() {
     startMatch() {
       if (room.match.phase !== 'lobby') return;
       const n = room.match.n + 1;
-      room.match = { phase: 'starting', n, min: 1, id: `solo${n}`, seed: (Math.random() * 2 ** 32) >>> 0, participants: [me.id], startsAt: Date.now() + 3000 };
+      room.match = { phase: 'starting', n, min: 1, id: `solo${n}`, seed: (Math.random() * 2 ** 32) >>> 0, participants: [me.id], startsAt: Date.now() };
       emit('starting', room.match);
       timer = setTimeout(() => {
         const previous = room.match;
         room.match = { ...previous, phase: 'playing', startedAt: Date.now(), pausedMs: 0 };
         delete room.match.startsAt;
         emit('matchstart', room.match);
-      }, 3000);
+      }, 0);
     },
     endMatch() {
       if (timer) clearTimeout(timer);

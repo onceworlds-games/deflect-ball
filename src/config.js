@@ -38,6 +38,7 @@ export const PERFECT_S = 0.1;
 
 // Rounds
 export const INTRO_S = 3;
+export const FIRST_INTRO_S = 1; // round 1 follows the platform's countdown: the ball only charges up
 export const HOLD_S = 0.8; // the ball waits after an elimination
 export const WIN_ORBIT_MS = 1900;
 export const BOARD_MS = 4000;
